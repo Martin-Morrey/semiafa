@@ -7,6 +7,8 @@ import semiafa
 from omegaconf import DictConfig, OmegaConf
 import hydra
 
+import myutils
+
 def maisieDateStringToDate(data):
     # https://blog.hubspot.com/website/pandas-split-string
     # days = data['yyyyddd'].str[-3:]
@@ -43,8 +45,8 @@ def readMaisie(csv_file_path=cfg.maisie_csv):
         maisie_df['Marginal and Central']= maisie_df[column_names].sum(axis=1)
 
         df = maisieDateStringToDate(maisie_df)
-        #df[' (0) Northern_Hemisphere'] = semiafa.normaliseList(df[' (0) Northern_Hemisphere'])
-        df['Marginal and Central Normalised'] = semiafa.normaliseList(df['Marginal and Central'])
+        #df[' (0) Northern_Hemisphere'] = myutils.normaliseList(df[' (0) Northern_Hemisphere'])
+        df['Marginal and Central Normalised'] = myutils.normaliseList(df['Marginal and Central'])
 
         return df
         

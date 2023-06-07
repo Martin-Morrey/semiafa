@@ -23,7 +23,10 @@ if __name__ == "__main__":
     ax.plot(maisie_df['date'], maisie_df['Marginal and Central Normalised'], label='MAISIE Central and Marginal Seas')
 
     # add the model data
-    model_data = semiafa.runModel(18)
+    model = semiafa.Model()
+    model.cfg.num_years = 18 # override config
+    model_data = model.runModel()
+
     ax.plot(model_data['date'],model_data['sie'], label='model SIE')
     #ax.plot(model_data['date'],model_data['solar_heat'], label='model Solar Heat')
 

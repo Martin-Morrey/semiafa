@@ -1,4 +1,4 @@
-num_years: 9
+num_years: 2
 air_heat_lag: 7
 air_melt_multiplier: 0.3 # useful range 3 - 5
 ice_albedo: 0.8

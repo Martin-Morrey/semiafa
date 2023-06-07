@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import (MultipleLocator, AutoMinorLocator)
 import semiafa
 
-def plotResults(data):
+def plotResults(model):
     # Plot the result 
     fig, ax = plt.subplots()
-
+    data = model.data
     # ice and sea extent
     ax.plot(data['day'], data['sie'], label='sea ice extent')
     #ax.plot(data['day'], data['sea'], label='area of open sea')
@@ -36,7 +36,7 @@ def plotResults(data):
     #ax.xaxis.set_ticks(year_tick_values,year_tick_labels)
 
     ax.set_xticks(np.arange(0, len(data['sie'])+1, 365))
-    ax.set_xticklabels(range(semiafa.cfg.num_years+1))
+    ax.set_xticklabels(range(model.cfg.num_years+1))
 
     # Failing attempt to label the month ticks
     # m_day = 0.0
@@ -59,13 +59,15 @@ def plotResults(data):
 
 if __name__ == "__main__":
 
-    data = semiafa.runModel(semiafa.cfg.num_years)
+    model = semiafa.Model()
+
+    data = model.runModel()
 
     # create data frame from dictionary
     df = pd.DataFrame.from_dict(data) # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.from_dict.html
     #df.set_index('day')
 
-    for y in range(semiafa.cfg.num_years):
+    for y in range(model.cfg.num_years):
         start = y * 365
         end = start + 364
         year_data = df[df['day'].between(start, end)]
@@ -73,5 +75,5 @@ if __name__ == "__main__":
         max_sie = year_data['sie'].max()
         print(y,min_sie,max_sie)
 
-    plotResults(data)
+    plotResults(model)
 
