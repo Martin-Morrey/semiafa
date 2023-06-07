@@ -1,0 +1,39 @@
+num_years: 9
+air_heat_lag: 7
+air_melt_multiplier: 0.3 # useful range 3 - 5
+ice_albedo: 0.8
+# --- ice power 0.0 ---
+#ice_power: 0.0 # 0 - 1
+#ice_freeze_multiplier: 4.1 # useful range 4.0 - 4.2, when ice_power is 0, 
+#
+# --- ice power 0.25 ---
+# ice_power: 0.25 # 0 - 1
+# ice_freeze_multiplier: 1.9 # useful range 4.5 -  , when ice_power is 0.5, 
+# sun_melt_multiplier: 25.35 #10 # useful range 18 - 25
+#
+# --- ice power 0.5 ---
+ice_power: 0.5 # 0 - 1
+ice_freeze_multiplier: 4.7 # useful range 4.5 -  , when ice_power is 0.5, 
+sun_melt_multiplier: 25.5 #10 # useful range 18 - 25
+#
+# --- ice power 1 ---
+# ice_power: 1 # 0 - 1
+# ice_freeze_multiplier: 20 # useful range 12 - 20 when ice_power is 1.0
+# sun_melt_multiplier: 24 #10 # useful range 18 - 25
+#
+lat_for_insolation_calc: 75 # representative latitude for approximate insolation
+max_sie: 0.99999
+min_sie: 0.00001
+ocean_heat_melt_multiplier: 0.25
+insolation_year: 2010
+insolation_file: data/insolation_2010.csv
+#maisie_csv: maisie-data/2023-06-01/masie_1km_allyears_extent_sqkm.csv
+maisie_csv: maisie-data/2023-06-01/masie_4km_allyears_extent_sqkm.csv
+sea_albedo: 0.1
+start_year: 2006 # 2014
+wind_spread_start: 136 #  - first of each month J:1, F:32, M:60, A:91, M:121 
+wind_spread_stop: 156 # ~ 50,000 km2 by day 150, but highly variable
+wind_spread_rate: 0.0001 # proportion of ice area exposed by wind daily, 5000km2 is ~0.00033
+shade_start: 137
+shade_stop: 201
+shade_area: 0.0001  # total area of ice cap approx 15,000,000 km2, shading 2000km2 is 0.000133r, 
