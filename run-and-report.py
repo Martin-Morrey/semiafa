@@ -8,12 +8,14 @@ import semiafa
 from omegaconf import DictConfig, OmegaConf
 import hydra
 
-def plotResults(model):
+def plotResults(model_with_shade,model_no_shade):
     # Plot the result 
     fig, ax = plt.subplots()
-    data = model.data
+    data_with_shade = model_with_shade.data
+    data_no_shade = model_no_shade.data
     # ice and sea extent
-    ax.plot(data['day'], data['sie'], label='sea ice extent')
+    ax.plot(data_no_shade['day'], data_no_shade['sie'], label='SIE original')
+    ax.plot(data_with_shade['day'], data_with_shade['sie'], label='SIE with shade')
     #ax.plot(data['day'], data['sea'], label='area of open sea')
 
     # insolation
@@ -39,8 +41,8 @@ def plotResults(model):
     #ax.xaxis.set_major_locator(MultipleLocator(365))
     #ax.xaxis.set_ticks(year_tick_values,year_tick_labels)
 
-    ax.set_xticks(np.arange(0, len(data['sie'])+1, 365))
-    ax.set_xticklabels(range(model.num_years+1))
+    ax.set_xticks(np.arange(0, len(data_with_shade['sie'])+1, 365))
+    ax.set_xticklabels(range(model_with_shade.num_years+1))
 
     # Failing attempt to label the month ticks
     # m_day = 0.0
@@ -70,24 +72,30 @@ if __name__ == "__main__":
     cfg = hydra.compose(config_name="object-config")
 
     # Hydra object instantiation, see https://hydra.cc/docs/1.2/advanced/instantiate_objects/overview/ 
-    model = hydra.utils.instantiate(cfg.Model)
+    model_with_shade = hydra.utils.instantiate(cfg.Model, shade_on = True)
+    model_no_shade = hydra.utils.instantiate(cfg.Model, shade_on = False)
 
     #model = semiafa.Model(cfg)
     #model = semiafa.Model()
 
-    data = model.runModel()
+    data_with_shade = model_with_shade.runModel()
+    data_no_shade = model_no_shade.runModel()
 
     # create data frame from dictionary
-    df = pd.DataFrame.from_dict(data) # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.from_dict.html
+    df_with_shade = pd.DataFrame.from_dict(data_with_shade) # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.from_dict.html
+    df_no_shade = pd.DataFrame.from_dict(data_no_shade) # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.from_dict.html
     #df.set_index('day')
 
-    for y in range(model.num_years):
+    for y in range(model_with_shade.num_years):
         start = y * 365
         end = start + 364
-        year_data = df[df['day'].between(start, end)]
-        min_sie = year_data['sie'].min()
-        max_sie = year_data['sie'].max()
-        print(y,min_sie,max_sie)
+        year_data_with_shade = df_with_shade[df_with_shade['day'].between(start, end)]
+        year_data_no_shade = df_no_shade[df_no_shade['day'].between(start, end)]
+        min_sie_with_shade = year_data_with_shade['sie'].min()
+        max_sie_with_shade = year_data_with_shade['sie'].max()
+        min_sie_no_shade = year_data_no_shade['sie'].min()
+        max_sie_no_shade = year_data_no_shade['sie'].max()
+        print(y,min_sie_no_shade,max_sie_no_shade,min_sie_with_shade,max_sie_with_shade,min_sie_with_shade-min_sie_no_shade )
 
-    plotResults(model)
+    plotResults(model_with_shade,model_no_shade)
 

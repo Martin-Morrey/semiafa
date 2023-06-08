@@ -39,12 +39,13 @@ class Model:
     wind_spread_start: int #  - first of each month J:1, F:32, M:60, A:91, M:121 
     wind_spread_stop: int # ~ 50,000 km2 by day 150, but highly variable
     wind_spread_rate: float # proportion of ice area exposed by wind daily, 5000km2 is ~0.00033
+    shade_on: bool
     shade_start: int
     shade_stop: int
     shade_area: float  # total area of ice cap approx 15,000,000 km2, shading 2000km2 is 0.000133r,
     data: dict
 
-    def __init__(self,num_years: int, air_heat_lag: int, air_melt_multiplier: float, ice_power: float, ice_freeze_multiplier: float, sun_melt_multiplier: float, lat_for_insolation_calc: float, max_sie: float , min_sie: float, ocean_heat_melt_multiplier: float, insolation_year: int, insolation_file: str, start_year: int, wind_spread_start: int, wind_spread_stop: int, wind_spread_rate: float, shade_start: int, shade_stop: int, shade_area: float) -> None:
+    def __init__(self,num_years: int, air_heat_lag: int, air_melt_multiplier: float, ice_power: float, ice_freeze_multiplier: float, sun_melt_multiplier: float, lat_for_insolation_calc: float, max_sie: float , min_sie: float, ocean_heat_melt_multiplier: float, insolation_year: int, insolation_file: str, start_year: int, wind_spread_start: int, wind_spread_stop: int, wind_spread_rate: float, shade_on: bool, shade_start: int, shade_stop: int, shade_area: float) -> None:
 
         # initialisation from Hydra config, see https://hydra.cc/docs/1.2/advanced/instantiate_objects/overview/
         self.num_years = num_years
@@ -63,6 +64,7 @@ class Model:
         self.wind_spread_start = wind_spread_start 
         self.wind_spread_stop = wind_spread_stop
         self.wind_spread_rate = wind_spread_rate
+        self.shade_on = shade_on
         self.shade_start = shade_start
         self.shade_stop = shade_stop
         self.shade_area = shade_area
@@ -84,8 +86,12 @@ class Model:
         return ( np.sin( (2*np.pi * dayOfYear/365) - (np.pi/2) ) + 1)/2
 
     def solarMelt(self,sie,solarHeat,day_of_year):
-        sea_area = 1 - (sie + self.shade(day_of_year))
-        sea_area = (abs(sea_area) + sea_area)/2 # ensure sea area always a positive or zero
+        if self.shade_on:
+            sea_area = 1 - (sie + self.shade(day_of_year))
+            sea_area = (abs(sea_area) + sea_area)/2 # ensure sea area always a positive or zero
+        else:
+            sea_area = 1 - sie
+
         return self.sun_melt_multiplier * sea_area * solarHeat / 365
         # include albedo and sun-on-ice 
         #sea_melt = self.sun_melt_multiplier * sea_area * self.sea_albedo * solarHeat / 365  # ToDo - only apply when sea_melt > radiation_freeze

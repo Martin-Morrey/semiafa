@@ -31,7 +31,7 @@ if __name__ == "__main__":
     cfg = hydra.compose(config_name="object-config")
 
     # Hydra object instantiation, see https://hydra.cc/docs/1.2/advanced/instantiate_objects/overview/ 
-    model = hydra.utils.instantiate(cfg.Model, num_years = 18) # override config
+    model = hydra.utils.instantiate(cfg.Model, num_years = 18, shade_on = False) # override config
     #model = semiafa.Model()
     #model.num_years = 18 # override config
 
