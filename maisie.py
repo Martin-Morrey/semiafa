@@ -1,7 +1,4 @@
 import pandas as pd
-import sys
-import matplotlib.pyplot as plt
-import semiafa
 
 # set up Hydra conf
 from omegaconf import DictConfig, OmegaConf
@@ -28,6 +25,7 @@ def maisieDateStringToDate(data):
 hydra.core.global_hydra.GlobalHydra.instance().clear() # see https://www.sscardapane.it/tutorials/hydra-tutorial/
 hydra.initialize(version_base=None, config_path="config")
 cfg = hydra.compose(config_name="config") 
+# ToDo - replace with hydra initialisation of Maisie object
 
 def readMaisie(csv_file_path=cfg.maisie_csv):
 

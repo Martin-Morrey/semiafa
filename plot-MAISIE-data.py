@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 import semiafa
 import maisie
 
+# set up Hydra conf
+from omegaconf import DictConfig, OmegaConf
+import hydra
 
 if __name__ == "__main__":
 
@@ -23,8 +26,15 @@ if __name__ == "__main__":
     ax.plot(maisie_df['date'], maisie_df['Marginal and Central Normalised'], label='MAISIE Central and Marginal Seas')
 
     # add the model data
-    model = semiafa.Model()
-    model.cfg.num_years = 18 # override config
+    hydra.core.global_hydra.GlobalHydra.instance().clear() # see https://www.sscardapane.it/tutorials/hydra-tutorial/
+    hydra.initialize(version_base=None, config_path="config")
+    cfg = hydra.compose(config_name="object-config")
+
+    # Hydra object instantiation, see https://hydra.cc/docs/1.2/advanced/instantiate_objects/overview/ 
+    model = hydra.utils.instantiate(cfg.Model, num_years = 18) # override config
+    #model = semiafa.Model()
+    #model.num_years = 18 # override config
+
     model_data = model.runModel()
 
     ax.plot(model_data['date'],model_data['sie'], label='model SIE')

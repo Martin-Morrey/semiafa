@@ -4,6 +4,10 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import (MultipleLocator, AutoMinorLocator)
 import semiafa
 
+# set up Hydra conf
+from omegaconf import DictConfig, OmegaConf
+import hydra
+
 def plotResults(model):
     # Plot the result 
     fig, ax = plt.subplots()
@@ -36,7 +40,7 @@ def plotResults(model):
     #ax.xaxis.set_ticks(year_tick_values,year_tick_labels)
 
     ax.set_xticks(np.arange(0, len(data['sie'])+1, 365))
-    ax.set_xticklabels(range(model.cfg.num_years+1))
+    ax.set_xticklabels(range(model.num_years+1))
 
     # Failing attempt to label the month ticks
     # m_day = 0.0
@@ -59,7 +63,17 @@ def plotResults(model):
 
 if __name__ == "__main__":
 
-    model = semiafa.Model()
+
+    # Quick and dirty approach, see https://stackoverflow.com/a/73813430
+    hydra.core.global_hydra.GlobalHydra.instance().clear() # see https://www.sscardapane.it/tutorials/hydra-tutorial/
+    hydra.initialize(version_base=None, config_path="config")
+    cfg = hydra.compose(config_name="object-config")
+
+    # Hydra object instantiation, see https://hydra.cc/docs/1.2/advanced/instantiate_objects/overview/ 
+    model = hydra.utils.instantiate(cfg.Model)
+
+    #model = semiafa.Model(cfg)
+    #model = semiafa.Model()
 
     data = model.runModel()
 
@@ -67,7 +81,7 @@ if __name__ == "__main__":
     df = pd.DataFrame.from_dict(data) # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.from_dict.html
     #df.set_index('day')
 
-    for y in range(model.cfg.num_years):
+    for y in range(model.num_years):
         start = y * 365
         end = start + 364
         year_data = df[df['day'].between(start, end)]
