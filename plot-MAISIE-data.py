@@ -5,30 +5,34 @@ import semiafa
 import maisie
 
 # set up Hydra conf
-from omegaconf import DictConfig, OmegaConf
+#from omegaconf import DictConfig, OmegaConf
 import hydra
 
 if __name__ == "__main__":
 
-    # Read the MAISIE CSV file into a Pandas DataFrame
+    # read the config
+    hydra.core.global_hydra.GlobalHydra.instance().clear() # see https://www.sscardapane.it/tutorials/hydra-tutorial/
+    hydra.initialize(version_base=None, config_path="config")
+    cfg = hydra.compose(config_name="object-config")
 
-    # get file path from config or command line argument
+    # Instantiate the SeaIceRecord object
     if len(sys.argv) < 2:
-        maisie_df = maisie.readMaisie() # config
+        maisieRecord = hydra.utils.instantiate(cfg.Maisie)
     else:
-        csv_file_path = sys.argv[1] # command line
-        maisie_df = maisie.readMaisie(csv_file_path)
-
+        maisieRecord = hydra.utils.instantiate(cfg.Maisie,csv_file_path=sys.argv[1])
+   
+     # get file path from config or command line argument
+    # if len(sys.argv) < 2:
+    #     maisie_df = maisie.readMaisie() # config
+    # else:
+    #     csv_file_path = sys.argv[1] # command line
+    #     maisie_df = maisie.readMaisie(csv_file_path)
+    maisie_df = maisieRecord.readMaisie()
 
     fig, ax = plt.subplots()
 
     # ice and sea extent
     ax.plot(maisie_df['date'], maisie_df['Marginal and Central Normalised'], label='MAISIE Central and Marginal Seas')
-
-    # add the model data
-    hydra.core.global_hydra.GlobalHydra.instance().clear() # see https://www.sscardapane.it/tutorials/hydra-tutorial/
-    hydra.initialize(version_base=None, config_path="config")
-    cfg = hydra.compose(config_name="object-config")
 
     # Hydra object instantiation, see https://hydra.cc/docs/1.2/advanced/instantiate_objects/overview/ 
     model = hydra.utils.instantiate(cfg.Model, num_years = 18, shade_on = False) # override config

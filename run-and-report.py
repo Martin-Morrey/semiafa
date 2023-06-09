@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.ticker import (MultipleLocator, AutoMinorLocator)
 import semiafa
+import myutils
 
 # set up Hydra conf
 from omegaconf import DictConfig, OmegaConf
@@ -86,16 +87,20 @@ if __name__ == "__main__":
     df_no_shade = pd.DataFrame.from_dict(data_no_shade) # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.from_dict.html
     #df.set_index('day')
 
+    sie_no_shade = myutils.maxAndMinsByDay(df_no_shade,'sie',model_no_shade.num_years)
+    sie_with_shade = myutils.maxAndMinsByDay(df_with_shade,'sie',model_with_shade.num_years)
+ 
     for y in range(model_with_shade.num_years):
         start = y * 365
         end = start + 364
-        year_data_with_shade = df_with_shade[df_with_shade['day'].between(start, end)]
-        year_data_no_shade = df_no_shade[df_no_shade['day'].between(start, end)]
-        min_sie_with_shade = year_data_with_shade['sie'].min()
-        max_sie_with_shade = year_data_with_shade['sie'].max()
-        min_sie_no_shade = year_data_no_shade['sie'].min()
-        max_sie_no_shade = year_data_no_shade['sie'].max()
-        print(y,min_sie_no_shade,max_sie_no_shade,min_sie_with_shade,max_sie_with_shade,min_sie_with_shade-min_sie_no_shade )
+        # year_data_with_shade = df_with_shade[df_with_shade['day'].between(start, end)]
+        # year_data_no_shade = df_no_shade[df_no_shade['day'].between(start, end)]
+        # min_sie_with_shade = year_data_with_shade['sie'].min()
+        # max_sie_with_shade = year_data_with_shade['sie'].max()
+        # min_sie_no_shade = year_data_no_shade['sie'].min()
+        # max_sie_no_shade = year_data_no_shade['sie'].max()
+        #print(y,min_sie_no_shade,max_sie_no_shade,min_sie_with_shade,max_sie_with_shade,min_sie_with_shade-min_sie_no_shade )
+        print(y, sie_no_shade['min'][y], sie_no_shade['max'][y], sie_with_shade['min'][y], sie_with_shade['max'][y], sie_with_shade['min'][y] - sie_no_shade['min'][y] )
 
     plotResults(model_with_shade,model_no_shade)
 

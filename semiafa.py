@@ -2,7 +2,6 @@
 # Simple Empirical Model of Ice Albedo Feedback in the Arctic
 
 # ToDo:
-# - compare parallel runs with and without shade
 # - (option to) calculate insolation in a separate step, for re-use in multiple runs?
 # - report insolation delta from shading for each year
 # - add parameter to measure benefit from retaining multi-season ice 
