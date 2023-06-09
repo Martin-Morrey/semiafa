@@ -11,10 +11,12 @@ import math
 import numpy as np
 import pandas as pd
 import sys
+import os.path
+import pickle
 
 # for insolation calculation in solarIrradiance()
 import solarpy as sp
-from datetime import datetime, timedelta, time
+from datetime import datetime, timedelta
 
 # import utility functions
 import myutils
@@ -151,27 +153,34 @@ class Model:
         return myutils.normaliseList(insolation) #(insolation-np.min(insolation))/(np.max(insolation)-np.min(insolation))
 
 
-    def insolationByActualDate(self,start_year,num_years):
-        lat = self.lat_for_insolation_calc
-        insolation = []
-        for num_year in range(num_years):
-            year = start_year + num_year
-            print(year, file=sys.stderr)
-            for day_num in range(365):
+    def insolationByDatesInRange(self,start_date,end_date):
 
-                # get data from day number, based on https://www.geeksforgeeks.org/python-convert-day-number-to-date-in-particular-year/
-                date_string = str(year) + str(day_num + 1).zfill(3)
-                date = pd.to_datetime(date_string, format='%Y%j')
-
-                # calc average insolation over 24 hours - see https://github.com/aqreed/solarpy/blob/master/examples/solar_irradiance.ipynb
-                hours = [date + timedelta(hours=i) for i in range(0, 24)]
+        if (self.insolation_file != '' and os.path.exists(self.insolation_file)):
+            insolation_df = pd.read_pickle(self.insolation_file)
+            return insolation_df 
+        else:
+            lat = self.lat_for_insolation_calc
+            insolation = []
+            insolation_df = pd.DataFrame()
+            current_date = start_date
+            while current_date <= end_date:
+                date_string = current_date.strftime('%Y%j')  # .strftime("%m-%d-%Y")
+                # calc mean insolation over 24 hours - see https://github.com/aqreed/solarpy/blob/master/examples/solar_irradiance.ipynb
+                hours = [current_date + timedelta(hours=i) for i in range(0, 24)]
                 G = [sp.beam_irradiance(0, time, lat) for time in hours]
                 mean_G = sum(G) / len(G)
-                print(date,mean_G, file=sys.stderr)
+                #print(current_date,mean_G, file=sys.stderr)
                 insolation.append(mean_G)
-        
-        return myutils.normaliseList(insolation) #(insolation-np.min(insolation))/(np.max(insolation)-np.min(insolation))
+                new_row = {'yyyyddd': date_string,'insolation':mean_G}
+                insolation_df = insolation_df._append(new_row, ignore_index=True)
 
+                current_date += timedelta(days=1)
+
+            insolation_df['norm-ins'] = myutils.normaliseList(insolation_df['insolation'].values.tolist())
+            if (self.insolation_file != ''):
+                insolation_df.to_pickle(self.insolation_file)
+            #return myutils.normaliseList(insolation) #(insolation-np.min(insolation))/(np.max(insolation)-np.min(insolation))
+            return insolation_df
 
     # =================================== Pass the configuration and run the model ======================================================
 
@@ -189,26 +198,40 @@ class Model:
 
         day_of_period = range(365 * num_years)
 
+        # set up time period
+        start_date = datetime(self.start_year,1,1)
+        end_date   = datetime(year=(self.start_year+ self.num_years) , month=12,  day=31)
+
         # Iterate over time period to model ice melt
         todays_sie = self.max_sie
-        insolation = self.insolationByDayOfYear()
-        #insolation_by_day = insolationByActualDate(self.start_year,num_years)
+        #insolation = self.insolationByDayOfYear()
+        ins_df = self.insolationByDatesInRange(start_date,end_date)
 
         print('Running model over ' + str(num_years) + ' years', file=sys.stderr)
 
-        for d in day_of_period:  # method - advanceOneDay
-            num_year = d // 365 # floor divide
-            day_of_year = d - (num_year * 365)
+        # Iterate over date range
+        current_date = start_date
+        d = 0
+        while current_date <= end_date:
+
+            year=current_date.year
+            day_of_year = current_date.timetuple().tm_yday # integer 0 -364/5
+
+        # for d in day_of_period:  # method - advanceOneDay
+        #     num_year = d // 365 # floor divide
+        #     day_of_year = d - (num_year * 365)
 
             # record the datetime for data comparisons
-            date_string = str(self.start_year + num_year) + str(day_of_year + 1).zfill(3)
-            self.data['yyyyddd'] = date_string
+            #date_string = str(self.start_year + num_year) + str(day_of_year + 1).zfill(3)
+            date_string = str(year) + current_date.strftime('%j') # https://www.programiz.com/python-programming/datetime/strftime
+            self.data['yyyyddd'].append(date_string)
             date = pd.to_datetime(date_string, format='%Y%j')
-            self.data['date'].append(date)
+            self.data['date'].append(current_date)
 
             # calculate melt factors
             #todays_solar_heat = solarHeat(d)
-            todays_solar_heat = insolation[day_of_year] # insolation_by_day[d] 
+            # todays_solar_heat = insolation[day_of_year] 
+            todays_solar_heat =  ins_df[ins_df['yyyyddd']==date_string]['norm-ins'].values[0] # insolation_by_day[d] 
             todays_solar_melt = self.solarMelt(todays_sie,todays_solar_heat,day_of_year) # NB: includes effect of shade
             todays_air_melt = self.airMelt(day_of_year)
             todays_wind_spread = self.windSpreadLoss(day_of_year)
@@ -240,6 +263,10 @@ class Model:
 
             # print(d,todays_sie, file=sys.stderr)
             # print(d,self.data['sie'][d], file=sys.stderr)
+
+            d+=1
+            current_date += timedelta(days=1)
+
 
         self.data['sea'] = np.subtract(1, self.data['sie'])
 

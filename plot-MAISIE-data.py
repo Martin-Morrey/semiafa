@@ -3,6 +3,7 @@ import sys
 import matplotlib.pyplot as plt
 import semiafa
 import maisie
+import myutils
 
 # set up Hydra conf
 #from omegaconf import DictConfig, OmegaConf
@@ -34,12 +35,18 @@ if __name__ == "__main__":
     # ice and sea extent
     ax.plot(maisie_df['date'], maisie_df['Marginal and Central Normalised'], label='MAISIE Central and Marginal Seas')
 
-    # Hydra object instantiation, see https://hydra.cc/docs/1.2/advanced/instantiate_objects/overview/ 
+    # Instantiate model object with Hydra config, see https://hydra.cc/docs/1.2/advanced/instantiate_objects/overview/ 
     model = hydra.utils.instantiate(cfg.Model, num_years = 18, shade_on = False) # override config
-    #model = semiafa.Model()
-    #model.num_years = 18 # override config
 
+    # run model
     model_data = model.runModel()
+
+    # create data frame from dictionary
+    model_data_df = pd.DataFrame.from_dict(model_data) # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.from_dict.html
+
+    # calculate difference between MAISIE data and model
+    meanDiff = myutils.meanAbsoluteDifference(maisie_df,'yyyyddd','Marginal and Central Normalised',model_data_df,'yyyyddd','sie')
+    print(meanDiff)
 
     ax.plot(model_data['date'],model_data['sie'], label='model SIE')
     #ax.plot(model_data['date'],model_data['solar_heat'], label='model Solar Heat')
