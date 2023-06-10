@@ -154,6 +154,8 @@ class Model:
 
 
     def insolationByDatesInRange(self,start_date,end_date):
+        # Calculate insolation over a date range,
+        # Cache result in a .pkl file - see https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_pickle.html
 
         if (self.insolation_file != '' and os.path.exists(self.insolation_file)):
             insolation_df = pd.read_pickle(self.insolation_file)
@@ -209,17 +211,14 @@ class Model:
 
         print('Running model over ' + str(num_years) + ' years', file=sys.stderr)
 
-        # Iterate over date range
+        # Iterate over date range, see https://stackoverflow.com/a/63568640
         current_date = start_date
         d = 0
+
         while current_date <= end_date:
 
             year=current_date.year
-            day_of_year = current_date.timetuple().tm_yday # integer 0 -364/5
-
-        # for d in day_of_period:  # method - advanceOneDay
-        #     num_year = d // 365 # floor divide
-        #     day_of_year = d - (num_year * 365)
+            day_of_year = current_date.timetuple().tm_yday # integer 0 -364/5, see https://www.geeksforgeeks.org/timetuple-function-of-datetime-date-class-in-python/
 
             # record the datetime for data comparisons
             #date_string = str(self.start_year + num_year) + str(day_of_year + 1).zfill(3)
@@ -231,7 +230,7 @@ class Model:
             # calculate melt factors
             #todays_solar_heat = solarHeat(d)
             # todays_solar_heat = insolation[day_of_year] 
-            todays_solar_heat =  ins_df[ins_df['yyyyddd']==date_string]['norm-ins'].values[0] # insolation_by_day[d] 
+            todays_solar_heat =  ins_df[ins_df['yyyyddd']==date_string]['norm-ins'].values[0] # insolation on date, see https://sparkbyexamples.com/pandas/pandas-extract-column-value-based-on-another-column
             todays_solar_melt = self.solarMelt(todays_sie,todays_solar_heat,day_of_year) # NB: includes effect of shade
             todays_air_melt = self.airMelt(day_of_year)
             todays_wind_spread = self.windSpreadLoss(day_of_year)

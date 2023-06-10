@@ -40,35 +40,25 @@ def maxAndMinsByYear(df, value_key, start_year, num_years, day_key='day'):
     return output
 
 def meanAbsoluteDifference(df1,index_key1,value_key1,df2,index_key2,value_key2):
+    # Returns mean of absolute differences between two columns of different data frames
+    # Applied to the common subset in a shared index, e.g. 'yyyyddd' date string
+    # ToDo - defensive checks needed
+    # --- check contents of index_key1 and index_key2 columns have some shared values
+    # --- check value_key1 and value_key2 strings are different, and change one if not
 
     # make sure both specified keys are of same type
     df1[index_key1] = df1[index_key1].astype(str) # cast specified key to string
     df2[index_key2] = df2[index_key2].astype(str) # cast specified key to string
-    # print(df1, file=sys.stderr)
-    # print(df2, file=sys.stderr)
 
-    # # filter df2 by keys in df1 
-    # keys1 = df1[index_key1].values.tolist() # https://datatofish.com/convert-pandas-dataframe-to-list/
-    # keys2 = df2[index_key2].values.tolist()
+    # merge two data frames on shared index, giving the common subset https://datascience.stackexchange.com/a/53837
+    merged_df = pd.merge(df1, df2, how='inner', left_on=index_key1, right_on=index_key2) 
+    #print(merged_df, file=sys.stderr)
 
-    # #print(keys, file=sys.stderr)
-    # #filter = df2[index_key2].isin(keys) # https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.isin.html
-    # #print (filter, file=sys.stderr)
-
-    # df2_filtered = df2[df2[index_key2].isin(keys1)] # https://www.statology.org/pandas-filter-in-list/
-    # df2_filtered = df2_filtered.reset_index()
-    # print(df2_filtered, file=sys.stderr)
-
-    merged_df = pd.merge(df1, df2, how='inner', left_on=index_key1, right_on=index_key2) # https://datascience.stackexchange.com/a/53837
-    print(merged_df, file=sys.stderr)
-
-    # calculate result
-    result_df = pd.DataFrame()
-    #result_df['diff'] = df1[value_key1] - df2_filtered[value_key2] # https://www.geeksforgeeks.org/how-to-subtract-two-columns-in-pandas-dataframe/
-
-    result_df['diff'] = merged_df[value_key1] - merged_df[value_key2]
+    # subtract the two columns and find the mean absolute value 
+    result_df = pd.DataFrame()  
+    result_df['diff'] = merged_df[value_key1] - merged_df[value_key2] # https://www.geeksforgeeks.org/how-to-subtract-two-columns-in-pandas-dataframe/
     result_df['abs'] = result_df['diff'].abs()
-    print(result_df, file=sys.stderr)
+    #print(result_df, file=sys.stderr)
     
     return result_df['abs'].mean()
 
