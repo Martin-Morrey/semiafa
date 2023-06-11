@@ -14,7 +14,8 @@ if __name__ == "__main__":
     # read the config
     hydra.core.global_hydra.GlobalHydra.instance().clear() # see https://www.sscardapane.it/tutorials/hydra-tutorial/
     hydra.initialize(version_base=None, config_path="config")
-    cfg = hydra.compose(config_name="object-config")
+    #cfg = hydra.compose(config_name="object-config")
+    cfg = hydra.compose(config_name="best-config_2023-06-10")
 
     # Instantiate the SeaIceRecord object
     if len(sys.argv) < 2:
@@ -36,7 +37,7 @@ if __name__ == "__main__":
     ax.plot(maisie_df['date'], maisie_df['Marginal and Central Normalised'], label='MAISIE Central and Marginal Seas')
 
     # Instantiate model object with Hydra config, see https://hydra.cc/docs/1.2/advanced/instantiate_objects/overview/ 
-    model = hydra.utils.instantiate(cfg.Model, num_years = 18, shade_on = False) # override config
+    model = hydra.utils.instantiate(cfg.Model, start_year = 2004, num_years = 19, shade_on = False) # override config
 
     # run model
     model_data = model.runModel()

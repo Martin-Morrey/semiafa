@@ -8,3 +8,10 @@ ToDo:
  - report insolation delta from shading for each year
  - add parameter to measure benefit from retaining multi-season ice?
  - optimise parameterisation using Optuna or similar
+
+## Optuna Sweeper Optimisation
+- Configure Optuna sweeper in Hydra config file, i.e. `config/optimiser-config.yaml`
+- Run `python3 optimise.py --multirun`
+- Best config parameters are recorded in `optimization_results.yaml`, in sub-folder `multirun/hh-mm-ss/`
+
+## Insolation Cache
