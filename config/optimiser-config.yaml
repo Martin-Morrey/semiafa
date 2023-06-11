@@ -8,7 +8,7 @@ hydra:
     direction: minimize
     study_name: optimiser
     storage: null
-    n_trials: 20
+    n_trials: 200
     n_jobs: 1
     #max_failure_rate: 0.0
     params:
@@ -21,17 +21,17 @@ hydra:
 Model:
   _target_: semiafa.Model
   num_years: 19
+  # parameters to be optimised
   air_heat_lag: 7
   air_melt_multiplier: 0.3 # useful range 3 - 5
-  # --- ice power 0.5 ---
   ice_power: 0.5 # 0 - 1
   ice_freeze_multiplier: 4.7 # useful range 4.5 -  , when ice_power is 0.5, 
   sun_melt_multiplier: 25.5 #10 # useful range 18 - 25
+  ocean_heat_melt_multiplier: 0.25
   #
   lat_for_insolation_calc: 75 # representative latitude for approximate insolation
   max_sie: 0.99999
   min_sie: 0.00001
-  ocean_heat_melt_multiplier: 0.25
   insolation_year: 2010
   insolation_file: data/insolation.pkl # .pkl file for caching insolation data
   start_year: 2004 # Allow a couple of years to settle when comparing with MAISIE 4KM starts 2006, MAISE 1KM starts 2014
@@ -45,4 +45,4 @@ Model:
 Maisie:
   _target_: maisie.SeaIceRecord
   csv_file_path: maisie-data/2023-06-01/masie_4km_allyears_extent_sqkm.csv
-  regions: [' (1) Beaufort_Sea',' (2) Chukchi_Sea',' (3) East_Siberian_Sea',' (4) Laptev_Sea',' (5) Kara_Sea',' (6) Barents_Sea',' (11) Central_Arctic']
+  regions: [' (1) Beaufort_Sea',' (2) Chukchi_Sea',' (3) East_Siberian_Sea',' (4) Laptev_Sea',' (5) Kara_Sea',' (11) Central_Arctic']

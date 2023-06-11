@@ -14,8 +14,8 @@ if __name__ == "__main__":
     # read the config
     hydra.core.global_hydra.GlobalHydra.instance().clear() # see https://www.sscardapane.it/tutorials/hydra-tutorial/
     hydra.initialize(version_base=None, config_path="config")
-    cfg = hydra.compose(config_name="object-config")
-    #cfg = hydra.compose(config_name="best-config_2023-06-10")
+    #cfg = hydra.compose(config_name="object-config")
+    cfg = hydra.compose(config_name="2023-06-11_optimised-config_run1")
 
     # Instantiate the SeaIceRecord object
     if len(sys.argv) < 2:
@@ -23,21 +23,34 @@ if __name__ == "__main__":
     else:
         maisieRecord = hydra.utils.instantiate(cfg.Maisie,csv_file_path=sys.argv[1])
    
+     # get file path from config or command line argument
+    # if len(sys.argv) < 2:
+    #     maisie_df = maisie.readMaisie() # config
+    # else:
+    #     csv_file_path = sys.argv[1] # command line
+    #     maisie_df = maisie.readMaisie(csv_file_path)
     maisie_df = maisieRecord.readMaisie()
 
     fig, ax = plt.subplots()
 
     # ice and sea extent
-    #ax.plot(maisie_df['date'], maisie_df['Marginal and Central Normalised'], label='MAISIE Central and Marginal Seas')
+    ax.plot(maisie_df['date'], maisie_df['Marginal and Central Normalised'], label='MAISIE Central and Marginal Seas')
 
-    # compare the seas
-    ax.plot(maisie_df['date'], myutils.normaliseList(maisie_df[' (1) Beaufort_Sea']), label='Beaufort Sea')
-    ax.plot(maisie_df['date'], myutils.normaliseList(maisie_df[' (2) Chukchi_Sea']), label='Chukchi Sea')
-    ax.plot(maisie_df['date'], myutils.normaliseList(maisie_df[' (3) East_Siberian_Sea']), label='East Siberian Sea')
-    ax.plot(maisie_df['date'], myutils.normaliseList(maisie_df[' (4) Laptev_Sea']), label='Laptev Sea')
-    ax.plot(maisie_df['date'], myutils.normaliseList(maisie_df[' (5) Kara_Sea']), label='Kara Sea')
-    ax.plot(maisie_df['date'], myutils.normaliseList(maisie_df[' (6) Barents_Sea']), label='Barents Sea')
-    ax.plot(maisie_df['date'], myutils.normaliseList(maisie_df[' (11) Central_Arctic']), label='Central Arctic')
+    # Instantiate model object with Hydra config, see https://hydra.cc/docs/1.2/advanced/instantiate_objects/overview/ 
+    model = hydra.utils.instantiate(cfg.Model, start_year = 2004, num_years = 19, shade_on = False) # override config
+
+    # run model
+    model_data = model.runModel()
+
+    # create data frame from dictionary
+    model_data_df = pd.DataFrame.from_dict(model_data) # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.from_dict.html
+
+    # calculate difference between MAISIE data and model
+    meanDiff = myutils.meanAbsoluteDifference(maisie_df,'yyyyddd','Marginal and Central Normalised',model_data_df,'yyyyddd','sie')
+    print(meanDiff)
+
+    ax.plot(model_data['date'],model_data['sie'], label='model SIE')
+    #ax.plot(model_data['date'],model_data['solar_heat'], label='model Solar Heat')
 
     # To Do
     # normalise MAISIE data based on mean yearly-maximum, or by dropping outliers

@@ -56,7 +56,7 @@ if __name__ == "__main__":
     # Quick and dirty approach, see https://stackoverflow.com/a/73813430
     hydra.core.global_hydra.GlobalHydra.instance().clear() # see https://www.sscardapane.it/tutorials/hydra-tutorial/
     hydra.initialize(version_base=None, config_path="config")
-    cfg = hydra.compose(config_name="object-config")
+    cfg = hydra.compose(config_name="2023-06-11_optimised-config_run1") #object-config
 
     # Hydra object instantiation, see https://hydra.cc/docs/1.2/advanced/instantiate_objects/overview/ 
     model_with_shade = hydra.utils.instantiate(cfg.Model, shade_on = True)
