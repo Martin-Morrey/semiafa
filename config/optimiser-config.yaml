@@ -12,9 +12,9 @@ hydra:
     n_jobs: 1
     #max_failure_rate: 0.0
     params:
-      Model.air_heat_lag: range(-28, 28, step=7) # 7
+      Model.air_heat_lag: range(-28, 42, step=7) # 7
       Model.air_melt_multiplier: range(0, 1, step=0.1) # 0.3 
-      Model.ice_power: range(0, 1, step=0.1) # 0.5 # 0 - 1
+      Model.ice_power: range(0, 2, step=0.1) # 0.5 # 0 - 1
       Model.ice_freeze_multiplier: range(1, 20, step=0.1) 
       Model.sun_melt_multiplier: range(15, 25, step=0.1)  # 25.5 #10 # useful range 18 - 25
       Model.ocean_heat_melt_multiplier: range(0.1, 0.5, step=0.05)  # : 0.25
@@ -37,12 +37,12 @@ Model:
   start_year: 2004 # Allow a couple of years to settle when comparing with MAISIE 4KM starts 2006, MAISE 1KM starts 2014
   wind_spread_start: 136 #  - first of each month J:1, F:32, M:60, A:91, M:121 
   wind_spread_stop: 156 # ~ 50,000 km2 by day 150, but highly variable
-  wind_spread_rate: 0.0001 # proportion of ice area exposed by wind daily, 5000km2 is ~0.00033
+  wind_spread_rate: 0.0001 # proportion of ice area exposed by wind daily, 5000km2 is ~0.0006
   shade_on: No
   shade_start: 137
   shade_stop: 201
-  shade_area: 0.001  # total area of ice cap approx 15,000,000 km2, shading 2000km2 is 0.000133r, 
+  shade_area: 0.001  # total area of ice cap approx 15,000,000 km2, shading 2000km2 is 0.000244, 
 Maisie:
   _target_: maisie.SeaIceRecord
   csv_file_path: maisie-data/2023-06-01/masie_4km_allyears_extent_sqkm.csv
-  regions: [' (1) Beaufort_Sea',' (2) Chukchi_Sea',' (3) East_Siberian_Sea',' (4) Laptev_Sea',' (5) Kara_Sea',' (11) Central_Arctic']
+  regions: [' (1) Beaufort_Sea',' (2) Chukchi_Sea',' (3) East_Siberian_Sea',' (4) Laptev_Sea',' (5) Kara_Sea',' (11) Central_Arctic'] # 8.2M km2

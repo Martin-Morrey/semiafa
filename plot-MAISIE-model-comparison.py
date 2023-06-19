@@ -15,7 +15,7 @@ if __name__ == "__main__":
     hydra.core.global_hydra.GlobalHydra.instance().clear() # see https://www.sscardapane.it/tutorials/hydra-tutorial/
     hydra.initialize(version_base=None, config_path="config")
     #cfg = hydra.compose(config_name="object-config")
-    cfg = hydra.compose(config_name="2023-06-11_optimised-config_run1")
+    cfg = hydra.compose(config_name="2023-06-11_optimised-config_run2")
 
     # Instantiate the SeaIceRecord object
     if len(sys.argv) < 2:
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     meanDiff = myutils.meanAbsoluteDifference(maisie_df,'yyyyddd','Marginal and Central Normalised',model_data_df,'yyyyddd','sie')
     print(meanDiff)
 
-    ax.plot(model_data['date'],model_data['sie'], label='model SIE')
+    ax.plot(model_data['date'],model_data['sie'], label='Modelled SIE')
     #ax.plot(model_data['date'],model_data['solar_heat'], label='model Solar Heat')
 
     # To Do
@@ -61,7 +61,7 @@ if __name__ == "__main__":
 
     # Set plot title and labels
     plt.title('MAISIE Data vs Ice Melt Model')
-    plt.xlabel('month/year')
+    plt.xlabel('year')
     plt.ylabel('normalised value')
 
     # Add a legend
