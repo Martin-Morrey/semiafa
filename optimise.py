@@ -17,7 +17,8 @@ def optimiseModel(cfg: DictConfig) -> float:
 
     # Instantiate model object with optimiser config 
     # start model a couple of years before MAISE to let it settle down
-    model = hydra.utils.instantiate(cfg.Model, start_year = 2004, num_years = 19, shade_on = False)
+    #model = hydra.utils.instantiate(cfg.Model, start_year = 2004, num_years = 19, shade_on = False)
+    model = hydra.utils.instantiate(cfg.Model, shade_on = False)
     # run model
     model_data = model.runModel()
 

@@ -5,6 +5,10 @@ For testing the order-of-magnitude impact of targeted solar-geoengineering inter
 
 Designed to model the SIE in the geographically bound area of Arctic sea, and interventions targeted in this area.
 
+## Pseudo Physical Parameters
+
+
+
 ## Optuna Sweeper Optimisation
 The Optuna optimiser works as a sweeper plugin for the Hydra config framework, see https://hydra.cc/docs/plugins/optuna_sweeper/.
 
@@ -26,4 +30,7 @@ See https://nsidc.org/data/masie/explore-region
 ## To Do List
  - check date range of specified insolation .pkl is compatible with current run
  - report insolation delta from shading for each year
+ - average insolation from multiple latitudes (currenty 75N only) 
  - add parameter to measure benefit from retaining multi-season ice?
+ - take account of sunlight reaching southerly latitudes first
+ - albedos as config parameters

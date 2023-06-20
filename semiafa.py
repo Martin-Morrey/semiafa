@@ -40,13 +40,14 @@ class Model:
     wind_spread_start: int #  - first of each month J:1, F:32, M:60, A:91, M:121 
     wind_spread_stop: int # ~ 50,000 km2 by day 150, but highly variable
     wind_spread_rate: float # proportion of ice area exposed by wind daily, 5000km2 is ~0.00033
+    real_area: float
     shade_on: bool
     shade_start: int
     shade_stop: int
     shade_area: float  # total area of ice cap approx 15,000,000 km2, shading 2000km2 is 0.000133r,
     data: dict
 
-    def __init__(self,num_years: int, air_heat_lag: int, air_melt_multiplier: float, ice_power: float, ice_freeze_multiplier: float, sun_melt_multiplier: float, lat_for_insolation_calc: float, max_sie: float , min_sie: float, ocean_heat_melt_multiplier: float, insolation_year: int, insolation_file: str, start_year: int, wind_spread_start: int, wind_spread_stop: int, wind_spread_rate: float, shade_on: bool, shade_start: int, shade_stop: int, shade_area: float) -> None:
+    def __init__(self,num_years: int, air_heat_lag: int, air_melt_multiplier: float, ice_power: float, ice_freeze_multiplier: float, sun_melt_multiplier: float, lat_for_insolation_calc: float, max_sie: float , min_sie: float, ocean_heat_melt_multiplier: float, insolation_year: int, insolation_file: str, start_year: int, wind_spread_start: int, wind_spread_stop: int, wind_spread_rate: float, real_area: float, shade_on: bool, shade_start: int, shade_stop: int, shade_area: float) -> None:
 
         # initialisation from Hydra config, see https://hydra.cc/docs/1.2/advanced/instantiate_objects/overview/
         self.num_years = num_years
@@ -83,8 +84,8 @@ class Model:
         self.data['yyyyddd'] = []
 
     # Define heat and melt calculation functions
-    def solarHeat(self,dayOfYear):
-        return ( np.sin( (2*np.pi * dayOfYear/365) - (np.pi/2) ) + 1)/2
+    # def solarHeat(self,dayOfYear):
+    #      return ( np.sin( (2*np.pi * dayOfYear/365) - (np.pi/2) ) + 1)/2
 
     def solarMelt(self,sie,solarHeat,day_of_year):
         if self.shade_on:
@@ -94,17 +95,28 @@ class Model:
             sea_area = 1 - sie
 
         return self.sun_melt_multiplier * sea_area * solarHeat / 365
+
         # include albedo and sun-on-ice 
         #sea_melt = self.sun_melt_multiplier * sea_area * self.sea_albedo * solarHeat / 365  # ToDo - only apply when sea_melt > radiation_freeze
         #ice_melt = 0 # self.sun_melt_multiplier * sie * self.ice_albedo * solarHeat / 365
         #return sea_melt + ice_melt
 
-    def airHeat(self,day_of_year):
-        lag = self.air_heat_lag
-        return self.solarHeat(day_of_year - lag)
+    # def airHeat(self,day_of_year):
+    #     lag = self.air_heat_lag
+    #     return self.solarHeat(day_of_year - lag)
 
-    def airMelt(self,day_of_year):
-        return self.air_melt_multiplier * self.airHeat(day_of_year) / 365
+    # def airMelt(self,day_of_year):
+    #     return self.air_melt_multiplier * self.airHeat(day_of_year) / 365
+
+    def airHeatNew(self,insolation_df,current_date):
+        lagged_date = current_date + timedelta(self.air_heat_lag) 
+        date_string = lagged_date.strftime('%Y%j')  # .strftime("%m-%d-%Y")
+        return self.getInsolationByDateString(insolation_df,date_string)
+         #return self.solarHeat(day_of_year - lag)
+
+    def airMeltNew(self,insolation_df,current_date):
+        return self.air_melt_multiplier * self.airHeatNew(insolation_df,current_date) / 365
+
 
     def shade(self,d):
         if d >= self.shade_start and d < self.shade_stop:
@@ -156,16 +168,23 @@ class Model:
     def insolationByDatesInRange(self,start_date,end_date):
         # Calculate insolation over a date range,
         # Cache result in a .pkl file - see https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_pickle.html
+        # NB: Remove cached .pkl before changing any dataframe keys
+
+        max_air_heat_lag = 43
 
         if (self.insolation_file != '' and os.path.exists(self.insolation_file)):
             insolation_df = pd.read_pickle(self.insolation_file)
+            # ToDo: check if df covers required date range (inc possible lag settings), e.g. if (start_date_string in df['yyyyddd'].values
             return insolation_df 
         else:
             lat = self.lat_for_insolation_calc
             insolation = []
             insolation_df = pd.DataFrame()
-            current_date = start_date
-            while current_date <= end_date:
+            current_date = start_date - timedelta(days = max_air_heat_lag)
+            lagged_end_date = end_date + timedelta(days = max_air_heat_lag)
+
+            while current_date <= lagged_end_date:
+                #print(current_date, file=sys.stderr)
                 date_string = current_date.strftime('%Y%j')  # .strftime("%m-%d-%Y")
                 # calc mean insolation over 24 hours - see https://github.com/aqreed/solarpy/blob/master/examples/solar_irradiance.ipynb
                 hours = [current_date + timedelta(hours=i) for i in range(0, 24)]
@@ -178,11 +197,16 @@ class Model:
 
                 current_date += timedelta(days=1)
 
-            insolation_df['norm-ins'] = myutils.normaliseList(insolation_df['insolation'].values.tolist())
+            insolation_df['normalised-insolation'] = myutils.normaliseList(insolation_df['insolation'].values.tolist())
             if (self.insolation_file != ''):
                 insolation_df.to_pickle(self.insolation_file)
             #return myutils.normaliseList(insolation) #(insolation-np.min(insolation))/(np.max(insolation)-np.min(insolation))
             return insolation_df
+        
+    def getInsolationByDateString(self,insolation_df,date_string):
+        # insolation on date, see https://sparkbyexamples.com/pandas/pandas-extract-column-value-based-on-another-column
+        #print('insolationByDateString called for:' + date_string, file=sys.stderr)
+        return insolation_df[insolation_df['yyyyddd']==date_string]['normalised-insolation'].values[0]
 
     # =================================== Pass the configuration and run the model ======================================================
 
@@ -198,16 +222,14 @@ class Model:
 
         num_years = self.num_years
 
-        day_of_period = range(365 * num_years)
-
         # set up time period
         start_date = datetime(self.start_year,1,1)
-        end_date   = datetime(year=(self.start_year+ self.num_years) , month=12,  day=31)
+        end_date   = datetime(year=(self.start_year + self.num_years -1) , month=12,  day=31)
 
         # Iterate over time period to model ice melt
         todays_sie = self.max_sie
         #insolation = self.insolationByDayOfYear()
-        ins_df = self.insolationByDatesInRange(start_date,end_date)
+        insolation_df = self.insolationByDatesInRange(start_date,end_date)
 
         print('Running model over ' + str(num_years) + ' years', file=sys.stderr)
 
@@ -224,15 +246,17 @@ class Model:
             #date_string = str(self.start_year + num_year) + str(day_of_year + 1).zfill(3)
             date_string = str(year) + current_date.strftime('%j') # https://www.programiz.com/python-programming/datetime/strftime
             self.data['yyyyddd'].append(date_string)
-            date = pd.to_datetime(date_string, format='%Y%j')
+            #date = pd.to_datetime(date_string, format='%Y%j')
             self.data['date'].append(current_date)
 
             # calculate melt factors
-            #todays_solar_heat = solarHeat(d)
-            # todays_solar_heat = insolation[day_of_year] 
-            todays_solar_heat =  ins_df[ins_df['yyyyddd']==date_string]['norm-ins'].values[0] # insolation on date, see https://sparkbyexamples.com/pandas/pandas-extract-column-value-based-on-another-column
+            #todays_solar_heat =  insolation_df[insolation_df['yyyyddd']==date_string]['normalised-insolation'].values[0] # insolation on date, see https://sparkbyexamples.com/pandas/pandas-extract-column-value-based-on-another-column
+            todays_solar_heat = self.getInsolationByDateString(insolation_df,date_string)
             todays_solar_melt = self.solarMelt(todays_sie,todays_solar_heat,day_of_year) # NB: includes effect of shade
-            todays_air_melt = self.airMelt(day_of_year)
+
+            #todays_air_melt = self.airMelt(day_of_year)
+            todays_air_melt = self.airMeltNew(insolation_df,current_date)
+
             todays_wind_spread = self.windSpreadLoss(day_of_year)
             todays_ocean_melt = self.oceanHeatMelt(todays_sie)
 

@@ -14,9 +14,9 @@ Model:
   max_sie: 0.99999
   min_sie: 0.00001
   insolation_year: 2010
-  insolation_file: data/insolation.pkl # .pkl file for caching insolation data
+  insolation_file: cache/insolation.pkl # .pkl file for caching insolation data
   start_year: 2004 # Allow a couple of years to settle when comparing with MAISIE 4KM starts 2006, MAISE 1KM starts 2014
-  num_years: 19
+  num_years: 20
   #
   # Area parameters
   # total area of selected regions in MAISIE-NH is approx 8,200,000 km2
@@ -27,6 +27,7 @@ Model:
   shade_start: 137
   shade_stop: 201
   shade_area: 0.002  # total area of selected regions in MAISIE-NH is approx 8,200,000 km2, so: 0.0002 is 1,640 km2 (~800 airships) 0.002 is 16,400 km2 (~8000 airships)
+  real_area: 8200000
 Maisie:
   _target_: maisie.SeaIceRecord
   csv_file_path: maisie-data/2023-06-01/masie_4km_allyears_extent_sqkm.csv

@@ -8,8 +8,8 @@ hydra:
     direction: minimize
     study_name: optimiser
     storage: null
-    n_trials: 200
-    n_jobs: 1
+    n_trials: 1000
+    n_jobs: 1 # 1 used in example, -1 supposedly enables use of all available resources, but seems to launch 0 jobs
     #max_failure_rate: 0.0
     params:
       Model.air_heat_lag: range(-28, 42, step=7) # 7
@@ -20,7 +20,7 @@ hydra:
       Model.ocean_heat_melt_multiplier: range(0.1, 0.5, step=0.05)  # : 0.25
 Model:
   _target_: semiafa.Model
-  num_years: 19
+  num_years: 20
   # parameters to be optimised
   air_heat_lag: 7
   air_melt_multiplier: 0.3 # useful range 3 - 5
@@ -33,15 +33,16 @@ Model:
   max_sie: 0.99999
   min_sie: 0.00001
   insolation_year: 2010
-  insolation_file: data/insolation.pkl # .pkl file for caching insolation data
+  insolation_file: cache/insolation.pkl # .pkl file for caching insolation data
   start_year: 2004 # Allow a couple of years to settle when comparing with MAISIE 4KM starts 2006, MAISE 1KM starts 2014
   wind_spread_start: 136 #  - first of each month J:1, F:32, M:60, A:91, M:121 
   wind_spread_stop: 156 # ~ 50,000 km2 by day 150, but highly variable
-  wind_spread_rate: 0.0001 # proportion of ice area exposed by wind daily, 5000km2 is ~0.0006
+  wind_spread_rate: 0.0003 # proportion of ice area exposed by wind daily, 5000km2 is ~0.0006
   shade_on: No
   shade_start: 137
   shade_stop: 201
-  shade_area: 0.001  # total area of ice cap approx 15,000,000 km2, shading 2000km2 is 0.000244, 
+  shade_area: 0.002  # total area of ice cap approx 15,000,000 km2, shading 2000km2 is 0.000244, 
+  real_area: 8200000
 Maisie:
   _target_: maisie.SeaIceRecord
   csv_file_path: maisie-data/2023-06-01/masie_4km_allyears_extent_sqkm.csv
