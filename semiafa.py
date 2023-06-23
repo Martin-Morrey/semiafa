@@ -109,7 +109,7 @@ class Model:
     #     return self.air_melt_multiplier * self.airHeat(day_of_year) / 365
 
     def airHeatNew(self,insolation_df,current_date):
-        lagged_date = current_date + timedelta(self.air_heat_lag) 
+        lagged_date = current_date + timedelta(days=self.air_heat_lag) 
         date_string = lagged_date.strftime('%Y%j')  # .strftime("%m-%d-%Y")
         return self.getInsolationByDateString(insolation_df,date_string)
          #return self.solarHeat(day_of_year - lag)
