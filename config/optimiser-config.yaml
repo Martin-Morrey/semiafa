@@ -8,7 +8,7 @@ hydra:
     direction: minimize
     study_name: optimiser
     storage: null
-    n_trials: 1000
+    n_trials: 200
     n_jobs: 1 # 1 used in example, -1 supposedly enables use of all available resources, but seems to launch 0 jobs
     #max_failure_rate: 0.0
     params:
@@ -47,3 +47,7 @@ Maisie:
   _target_: maisie.SeaIceRecord
   csv_file_path: maisie-data/2023-06-01/masie_4km_allyears_extent_sqkm.csv
   regions: [' (1) Beaufort_Sea',' (2) Chukchi_Sea',' (3) East_Siberian_Sea',' (4) Laptev_Sea',' (5) Kara_Sea',' (11) Central_Arctic'] # 8.2M km2
+Optimiser:
+  start_year: 2007
+  end_year: 2022
+  ice_maximum_shortfall_cost: 40.0

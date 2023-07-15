@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import semiafa
 import maisie
 import myutils
+import csv
 
 # set up Hydra conf
 #from omegaconf import DictConfig, OmegaConf
@@ -29,22 +30,36 @@ if __name__ == "__main__":
 
     # ice and sea extent
     #ax.plot(maisie_df['date'], maisie_df['Marginal and Central Normalised'], label='MAISIE Central and Marginal Seas')
+    seas = maisieRecord.column_names
 
+    sie_min_max = {}
+    num_years = (maisieRecord.end_year - maisieRecord.start_year) + 1
+    maisie_df_n = maisie_df.copy()
     # compare the seas
-    ax.plot(maisie_df['date'], myutils.normaliseList(maisie_df[' (1) Beaufort_Sea']), label='Beaufort Sea')
-    ax.plot(maisie_df['date'], myutils.normaliseList(maisie_df[' (2) Chukchi_Sea']), label='Chukchi Sea')
-    ax.plot(maisie_df['date'], myutils.normaliseList(maisie_df[' (3) East_Siberian_Sea']), label='East Siberian Sea')
-    ax.plot(maisie_df['date'], myutils.normaliseList(maisie_df[' (4) Laptev_Sea']), label='Laptev Sea')
-    ax.plot(maisie_df['date'], myutils.normaliseList(maisie_df[' (5) Kara_Sea']), label='Kara Sea')
-    ax.plot(maisie_df['date'], myutils.normaliseList(maisie_df[' (6) Barents_Sea']), label='Barents Sea')
-    ax.plot(maisie_df['date'], myutils.normaliseList(maisie_df[' (11) Central_Arctic']), label='Central Arctic')
+    for sea in seas:
+        maisie_df_n[sea] = myutils.normaliseList(maisie_df[sea])
+        ax.plot(maisie_df_n['date'], maisie_df_n[sea], label=sea)       
+        sie_min_max[sea] = myutils.maxAndMinsByYear(maisie_df,sea,maisieRecord.start_year,num_years)
 
-    # To Do
-    # normalise MAISIE data based on mean yearly-maximum, or by dropping outliers
-    # - Return mean square difference between MAISIE and model results for optimiser
-    # - - get yyyyddd keys out of maisie_df, and use to filter model_data
-    # - - put SIE from both into a single dataframe, diff values, and square
-    # - - calc mean value of the column
+
+    headers = ['year'] + seas
+    writer = csv.writer(sys.stdout)
+    writer.writerow(headers)
+    for y in range(num_years):
+        value_list = [y]
+        for sea in seas:
+            value_list.append(sie_min_max[sea]['max'][y])
+        writer.writerow(value_list)
+
+
+    # for y in range(model_with_shade.num_years):
+    #     year = str(y + model_no_shade.start_year)
+    #     diff = sie_with_shade['min'][y] - sie_no_shade['min'][y]
+    #     shade_multiplier = diff / model_with_shade.shade_area
+    #     data = [year, sie_no_shade['min'][y], sie_no_shade['max'][y], sie_with_shade['min'][y], sie_with_shade['max'][y], diff, shade_multiplier ]
+    #     writer.writerow(data)
+
+
 
     # Set plot title and labels
     plt.title('MAISIE Data vs Ice Melt Model')

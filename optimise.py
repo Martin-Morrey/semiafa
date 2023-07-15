@@ -1,4 +1,6 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+# Optimise the model using Optuna
+# Run with: python3 optimise.py --multirun
+
 import hydra
 from omegaconf import DictConfig
 import pandas as pd
@@ -26,9 +28,13 @@ def optimiseModel(cfg: DictConfig) -> float:
     model_data_df = pd.DataFrame.from_dict(model_data) # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.from_dict.html
 
     # calculate difference between MAISIE data and model
-    meanDiff = myutils.meanAbsoluteDifference(maisie_df,'yyyyddd','Marginal and Central Normalised',model_data_df,'yyyyddd','sie')
-    return meanDiff
+    #meanDiff = myutils.meanAbsoluteDifference(maisie_df,'yyyyddd','Marginal and Central Normalised',model_data_df,'yyyyddd','sie')
+    ###meanDiff = myutils.meanTopBiasedAbsoluteDifference(maisie_df,'yyyyddd','Marginal and Central Normalised',model_data_df,'yyyyddd','sie')
+    #return meanDiff
 
+    adjustedCost = myutils.adjustedCostFunction(maisie_df,'yyyyddd','Marginal and Central Normalised',model_data_df,'yyyyddd','sie',cfg.Optimiser.start_year,cfg.Optimiser.end_year,cfg.Optimiser.ice_maximum_shortfall_cost)
+    return adjustedCost
+    
 
 if __name__ == "__main__":
     optimiseModel()

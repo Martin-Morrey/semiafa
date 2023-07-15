@@ -58,7 +58,14 @@ if __name__ == "__main__":
     # Quick and dirty approach, see https://stackoverflow.com/a/73813430
     hydra.core.global_hydra.GlobalHydra.instance().clear() # see https://www.sscardapane.it/tutorials/hydra-tutorial/
     hydra.initialize(version_base=None, config_path="config")
-    cfg = hydra.compose(config_name="2023-06-11_optimised-config_run2") #object-config
+    #cfg = hydra.compose(config_name="2023-06-11_optimised-config_run2") # max SIE 0.997, significant multiplier effect
+    #cfg = hydra.compose(config_name="2023-06-20_optimised-config") # best_value: 0.04107893468035606
+    #cfg = hydra.compose(config_name="2023-07-06_optimised-config_run2") 
+    #cfg = hydra.compose(config_name="2023-07-07_optimised-config_run1")
+
+    cfg_file = "optimised-config_imsc-40p0"
+    cfg = hydra.compose(config_name=cfg_file)
+    print('Applying config: ' + cfg_file, file=sys.stderr)
 
     # Hydra object instantiation, see https://hydra.cc/docs/1.2/advanced/instantiate_objects/overview/ 
     model_with_shade = hydra.utils.instantiate(cfg.Model, num_years = 5, shade_on = True) # start_year = 2004

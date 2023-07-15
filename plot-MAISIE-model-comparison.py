@@ -15,7 +15,13 @@ if __name__ == "__main__":
     hydra.core.global_hydra.GlobalHydra.instance().clear() # see https://www.sscardapane.it/tutorials/hydra-tutorial/
     hydra.initialize(version_base=None, config_path="config")
     #cfg = hydra.compose(config_name="object-config")
-    cfg = hydra.compose(config_name="2023-06-11_optimised-config_run2")
+    #cfg = hydra.compose(config_name="2023-06-11_optimised-config_run2")
+    #cfg = hydra.compose(config_name="2023-06-20_optimised-config_run2")
+    #cfg = hydra.compose(config_name="2023-06-24_optimised-config")
+    #cfg = hydra.compose(config_name="2023-07-06_optimised-config")
+    cfg_file = "optimised-config_imsc-40p0"
+    cfg = hydra.compose(config_name=cfg_file)
+    print('Applying config: ' + cfg_file, file=sys.stderr)
 
     # Instantiate the SeaIceRecord object
     if len(sys.argv) < 2:

@@ -9,10 +9,14 @@ import myutils
 class SeaIceRecord:
     csv_file_path: str
     column_names: list
+    start_year: int
+    end_year: int
 
-    def __init__(self, csv_file_path: str, regions: list):
+    def __init__(self, csv_file_path: str, regions: list, start_year: int = 2007, end_year:int = 2022):
         self.csv_file_path = csv_file_path
         self.column_names = regions
+        self.start_year = start_year
+        self.end_year = end_year
 
     def maisieDateStringToDate(self,data):
         # https://blog.hubspot.com/website/pandas-split-string

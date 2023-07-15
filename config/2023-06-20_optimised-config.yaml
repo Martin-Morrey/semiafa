@@ -1,0 +1,35 @@
+Model:
+  _target_: semiafa.Model
+  #
+  # physical parameters from optimisation
+  air_heat_lag: 28
+  air_melt_multiplier: 0.4
+  ice_power: 0.6
+  ice_freeze_multiplier: 7.6
+  sun_melt_multiplier: 23.5
+  ocean_heat_melt_multiplier: 0.45
+  # optimisation outputs giving best_value for standard error of 0.04107893468035606
+  #
+  # core parameters
+  lat_for_insolation_calc: 75 # representative latitude for approximate insolation
+  max_sie: 0.99999
+  min_sie: 0.00001
+  insolation_year: 2010
+  insolation_file: cache/insolation.pkl # .pkl file for caching insolation data
+  start_year: 2004 # Allow a couple of years to settle when comparing with MAISIE 4KM starts 2006, MAISE 1KM starts 2014
+  num_years: 20
+  #
+  # Area parameters
+  # total area of selected regions in MAISIE-NH is approx 8,200,000 km2
+  wind_spread_start: 136 #  - first of each month J:1, F:32, M:60, A:91, M:121 
+  wind_spread_stop: 156 # data indicates ~50,000 km2 by day 150, but highly variable
+  wind_spread_rate: 0.0003 # proportion of ice area exposed by wind daily, 0.0003 is ~2,500km2 (x 20 days give 50,000)
+  shade_on: No
+  shade_start: 137
+  shade_stop: 201
+  shade_area: 0.002  # total area of selected regions in MAISIE-NH is approx 8,200,000 km2, so: 0.0002 is 1,640 km2 (~800 airships) 0.002 is 16,400 km2 (~8000 airships)
+  real_area: 8200000
+Maisie:
+  _target_: maisie.SeaIceRecord
+  csv_file_path: maisie-data/2023-06-01/masie_4km_allyears_extent_sqkm.csv
+  regions: [' (1) Beaufort_Sea',' (2) Chukchi_Sea',' (3) East_Siberian_Sea',' (4) Laptev_Sea',' (5) Kara_Sea',' (11) Central_Arctic'] # 8.2 M km2
