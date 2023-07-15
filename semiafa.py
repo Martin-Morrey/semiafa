@@ -111,7 +111,7 @@ class Model:
     def airHeatNew(self,insolation_df,current_date):
         lagged_date = current_date + timedelta(days=self.air_heat_lag) 
         date_string = lagged_date.strftime('%Y%j')  # .strftime("%m-%d-%Y")
-        return self.getInsolationByDateString(insolation_df,date_string)
+        return self.getValueByDateString(insolation_df,date_string,'normalised-insolation')
          #return self.solarHeat(day_of_year - lag)
 
     def airMeltNew(self,insolation_df,current_date):
@@ -203,10 +203,10 @@ class Model:
             #return myutils.normaliseList(insolation) #(insolation-np.min(insolation))/(np.max(insolation)-np.min(insolation))
             return insolation_df
         
-    def getInsolationByDateString(self,insolation_df,date_string):
-        # insolation on date, see https://sparkbyexamples.com/pandas/pandas-extract-column-value-based-on-another-column
-        #print('insolationByDateString called for:' + date_string, file=sys.stderr)
-        return insolation_df[insolation_df['yyyyddd']==date_string]['normalised-insolation'].values[0]
+    def getValueByDateString(self,df,date_string,value_string):
+        # value on date, see https://sparkbyexamples.com/pandas/pandas-extract-column-value-based-on-another-column
+        #print('valueByDateString called for:' + date_string, file=sys.stderr)
+        return df[df['yyyyddd']==date_string][value_string].values[0]
 
     # =================================== Pass the configuration and run the model ======================================================
 
@@ -251,7 +251,7 @@ class Model:
 
             # calculate melt factors
             #todays_solar_heat =  insolation_df[insolation_df['yyyyddd']==date_string]['normalised-insolation'].values[0] # insolation on date, see https://sparkbyexamples.com/pandas/pandas-extract-column-value-based-on-another-column
-            todays_solar_heat = self.getInsolationByDateString(insolation_df,date_string)
+            todays_solar_heat = self.getValueByDateString(insolation_df,date_string,'normalised-insolation')
             todays_solar_melt = self.solarMelt(todays_sie,todays_solar_heat,day_of_year) # NB: includes effect of shade
 
             #todays_air_melt = self.airMelt(day_of_year)
