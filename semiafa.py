@@ -101,21 +101,14 @@ class Model:
         #ice_melt = 0 # self.sun_melt_multiplier * sie * self.ice_albedo * solarHeat / 365
         #return sea_melt + ice_melt
 
-    # def airHeat(self,day_of_year):
-    #     lag = self.air_heat_lag
-    #     return self.solarHeat(day_of_year - lag)
-
-    # def airMelt(self,day_of_year):
-    #     return self.air_melt_multiplier * self.airHeat(day_of_year) / 365
-
-    def airHeatNew(self,insolation_df,current_date):
+    def airHeat(self,insolation_df,current_date):
         lagged_date = current_date + timedelta(days=self.air_heat_lag) 
         date_string = lagged_date.strftime('%Y%j')  # .strftime("%m-%d-%Y")
         return self.getValueByDateString(insolation_df,date_string,'normalised-insolation')
          #return self.solarHeat(day_of_year - lag)
 
-    def airMeltNew(self,insolation_df,current_date):
-        return self.air_melt_multiplier * self.airHeatNew(insolation_df,current_date) / 365
+    def airMelt(self,insolation_df,current_date):
+        return self.air_melt_multiplier * self.airHeat(insolation_df,current_date) / 365
 
 
     def shade(self,d):
@@ -254,8 +247,7 @@ class Model:
             todays_solar_heat = self.getValueByDateString(insolation_df,date_string,'normalised-insolation')
             todays_solar_melt = self.solarMelt(todays_sie,todays_solar_heat,day_of_year) # NB: includes effect of shade
 
-            #todays_air_melt = self.airMelt(day_of_year)
-            todays_air_melt = self.airMeltNew(insolation_df,current_date)
+            todays_air_melt = self.airMelt(insolation_df,current_date)
 
             todays_wind_spread = self.windSpreadLoss(day_of_year)
             todays_ocean_melt = self.oceanHeatMelt(todays_sie)
