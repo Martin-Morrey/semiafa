@@ -86,21 +86,28 @@ if __name__ == "__main__":
     # sie_no_shade = myutils.maxAndMinsByDay(df_no_shade,'sie',model_no_shade.num_years)
     # sie_with_shade = myutils.maxAndMinsByDay(df_with_shade,'sie',model_with_shade.num_years)
 
-    sie_no_shade = myutils.maxAndMinsByYear(df_no_shade,'sie',model_no_shade.start_year,model_no_shade.num_years)
-    sie_with_shade = myutils.maxAndMinsByYear(df_with_shade,'sie',model_with_shade.start_year,model_with_shade.num_years)
+    sie_no_shade = myutils.statsByYear(df_no_shade,'sie',model_no_shade.start_year,model_no_shade.num_years)
+    sie_with_shade = myutils.statsByYear(df_with_shade,'sie',model_with_shade.start_year,model_with_shade.num_years)
+
+    solar_heat_no_shade = myutils.statsByYear(df_no_shade,'total-insolation',model_no_shade.start_year,model_no_shade.num_years)
+    solar_heat_with_shade = myutils.statsByYear(df_with_shade,'total-insolation',model_with_shade.start_year,model_with_shade.num_years)
+
 
     writer = csv.writer(sys.stdout)
 
-    header = ['year', 'min SIE no shade', 'max SIE no shade', 'min SIE with shade', 'max SIE with shade' ,'diff in minimums', 'shade multiplier']
+    header = ['year', 'min SIE no shade', 'max SIE no shade', 'min SIE with shade', 'max SIE with shade' ,'diff in minimums', 'shade multiplier','solar heat no shade (MJ)', 'solar heat with shade(MJ)','solar heat delta (MJ)']
     writer.writerow(header)
 
     for y in range(model_with_shade.num_years):
         year = str(y + model_no_shade.start_year)
         diff = sie_with_shade['min'][y] - sie_no_shade['min'][y]
         shade_multiplier = diff / model_with_shade.shade_area
-        data = [year, sie_no_shade['min'][y], sie_no_shade['max'][y], sie_with_shade['min'][y], sie_with_shade['max'][y], diff, shade_multiplier ]
+        full_solar_heat = solar_heat_no_shade['sum'][y]
+        reduced_solar_heat = solar_heat_with_shade['sum'][y]
+        solar_heat_delta = full_solar_heat - reduced_solar_heat
+        data = [year, sie_no_shade['min'][y], sie_no_shade['max'][y], sie_with_shade['min'][y], sie_with_shade['max'][y], diff, shade_multiplier, full_solar_heat, reduced_solar_heat ,solar_heat_delta ]
         writer.writerow(data)
 
     # ToDo: clear cache file(s)
-    plotResults(model_with_shade,model_no_shade)
+    #plotResults(model_with_shade,model_no_shade)
 

@@ -15,7 +15,7 @@ import os.path
 import pickle
 
 # for insolation calculation in solarIrradiance()
-import solarpy as sp
+import solarpy as sp # https://github.com/aqreed/solarpy/blob/master/examples/solar_irradiance.ipynb
 from datetime import datetime, timedelta
 
 # import utility functions
@@ -66,6 +66,7 @@ class Model:
         self.wind_spread_start = wind_spread_start 
         self.wind_spread_stop = wind_spread_stop
         self.wind_spread_rate = wind_spread_rate
+        self.real_area = real_area
         self.shade_on = shade_on
         self.shade_start = shade_start
         self.shade_stop = shade_stop
@@ -75,6 +76,7 @@ class Model:
         self.data['day'] = []
         self.data['sie'] = []
         self.data['solar_heat'] = []
+        self.data['total-insolation'] = []
         self.data['solar_melt'] = []
         self.data['ocean_melt'] = []
         self.data['air_melt'] = []
@@ -87,14 +89,9 @@ class Model:
     # def solarHeat(self,dayOfYear):
     #      return ( np.sin( (2*np.pi * dayOfYear/365) - (np.pi/2) ) + 1)/2
 
-    def solarMelt(self,sie,solarHeat,day_of_year):
-        if self.shade_on:
-            sea_area = 1 - (sie + self.shade(day_of_year))
-            sea_area = (abs(sea_area) + sea_area)/2 # ensure sea area always a positive or zero
-        else:
-            sea_area = 1 - sie
-
-        return self.sun_melt_multiplier * sea_area * solarHeat / 365
+    def solarMelt(self,sea_area_in_sunlight,solarHeat):
+        #sea_area_in_sunlight = self.seaAreaInSunlight(sie,day_of_year)
+        return self.sun_melt_multiplier * sea_area_in_sunlight * solarHeat / 365
 
         # include albedo and sun-on-ice 
         #sea_melt = self.sun_melt_multiplier * sea_area * self.sea_albedo * solarHeat / 365  # ToDo - only apply when sea_melt > radiation_freeze
@@ -110,8 +107,16 @@ class Model:
     def airMelt(self,insolation_df,current_date):
         return self.air_melt_multiplier * self.airHeat(insolation_df,current_date) / 365
 
+    def seaAreaInSunlight(self,sie,day_of_year):
+        if self.shade_on:
+            sea_area = 1 - (sie + self.shadeArea(day_of_year))
+            sea_area = (abs(sea_area) + sea_area)/2 # ensure sea area always a positive or zero
+        else:
+            sea_area = 1 - sie
+        return sea_area
 
-    def shade(self,d):
+
+    def shadeArea(self,d):
         if d >= self.shade_start and d < self.shade_stop:
             return self.shade_area
         else:
@@ -127,39 +132,31 @@ class Model:
         return self.ocean_heat_melt_multiplier * sie * (1/365)
 
     def radiationFreeze(self,sie):
-        sea_area = 1 - sie
-        #return self.ice_freeze_multiplier * 1 / 365 # NOT influenced by area of open sea
-        #return self.ice_freeze_multiplier * math.sqrt(sea_area) * 1 / 365 # partially influenced by area of open sea
-        #return self.ice_freeze_multiplier * sea_area * 1 / 365 # directly influenced by area of open sea
-        powered_sea_area = sea_area ** self.ice_power
+        sea_area = 1 - sie  # ToDo - check for value > 1, i.e. (SIE < 0) ?
         return self.ice_freeze_multiplier * (sea_area ** self.ice_power) * 1 / 365
 
-    # def normaliseList(my_list):
-    #     # normalise a list of numbers, see https://www.statology.org/numpy-normalize-between-0-and-1/
-    #     return  (my_list - np.min(my_list)) / (np.max(my_list) - np.min(my_list))
+    # def insolationByDayOfYear(self):
+    #     print('Calculating insolation', file=sys.stderr)
+    #     lat = self.lat_for_insolation_calc
+    #     insolation = []
+    #     for day_num in range(365):
 
-    def insolationByDayOfYear(self):
-        print('Calculating insolation', file=sys.stderr)
-        lat = self.lat_for_insolation_calc
-        insolation = []
-        for day_num in range(365):
+    #         # get data from day number, based on https://www.geeksforgeeks.org/python-convert-day-number-to-date-in-particular-year/
+    #         day = str(day_num+1)
+    #         day.rjust(3 + len(day), '0')
+    #         date = datetime.strptime(str(self.insolation_year) + "-" + day, "%Y-%j") # .strftime("%m-%d-%Y") 
 
-            # get data from day number, based on https://www.geeksforgeeks.org/python-convert-day-number-to-date-in-particular-year/
-            day = str(day_num+1)
-            day.rjust(3 + len(day), '0')
-            date = datetime.strptime(str(self.insolation_year) + "-" + day, "%Y-%j") # .strftime("%m-%d-%Y") 
-
-            # calc average insolation over 24 hours - see https://github.com/aqreed/solarpy/blob/master/examples/solar_irradiance.ipynb
-            hours = [date + timedelta(hours=i) for i in range(0, 24)]
-            G = [sp.beam_irradiance(0, time, lat) for time in hours]
-            mean_G = sum(G) / len(G)
-            insolation.append(mean_G)
+    #         # calc average insolation (W/m2) over 24 hours - see https://github.com/aqreed/solarpy/blob/master/examples/solar_irradiance.ipynb
+    #         hours = [date + timedelta(hours=i) for i in range(0, 24)]
+    #         G = [sp.beam_irradiance(0, time, lat) for time in hours] # ToDo: consider using actual altitude, not 0 - how much ultimately reaches ground?
+    #         mean_G = sum(G) / len(G) # (W/m2) 
+    #         insolation.append(mean_G)
         
-        return myutils.normaliseList(insolation) #(insolation-np.min(insolation))/(np.max(insolation)-np.min(insolation))
+    #     return myutils.normaliseList(insolation) #(insolation-np.min(insolation))/(np.max(insolation)-np.min(insolation))
 
 
-    def insolationByDatesInRange(self,start_date,end_date):
-        # Calculate insolation over a date range,
+    def insolationOverDateRange(self,start_date,end_date):
+        # Calculate daily mean insolation (Wm^-2) over a range of dates
         # Cache result in a .pkl file - see https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_pickle.html
         # NB: Remove cached .pkl before changing any dataframe keys
 
@@ -181,11 +178,11 @@ class Model:
                 date_string = current_date.strftime('%Y%j')  # .strftime("%m-%d-%Y")
                 # calc mean insolation over 24 hours - see https://github.com/aqreed/solarpy/blob/master/examples/solar_irradiance.ipynb
                 hours = [current_date + timedelta(hours=i) for i in range(0, 24)]
-                G = [sp.beam_irradiance(0, time, lat) for time in hours]
-                mean_G = sum(G) / len(G)
-                #print(current_date,mean_G, file=sys.stderr)
+                G = [sp.beam_irradiance(0, time, lat) for time in hours] # array of insolation values (W/m2)
+                # ToDo: consider using actual altitude, not 0 - are we interested in energy absorbed by the atmosphere?
+                mean_G = sum(G) / len(G) # (W/m2) 
                 insolation.append(mean_G)
-                new_row = {'yyyyddd': date_string,'insolation':mean_G}
+                new_row = {'yyyyddd': date_string,'insolation': mean_G} # (W/m2) 
                 insolation_df = insolation_df._append(new_row, ignore_index=True)
 
                 current_date += timedelta(days=1)
@@ -209,9 +206,6 @@ class Model:
 
 
     def runModel(self): # ,num_years = self.num_years
-        # solar input
-        #solarInput = ( np.sin( (2*np.pi * day/365) - (np.pi/2) ) + 1)/2
-        #solarInput = solarHeat(day)
 
         num_years = self.num_years
 
@@ -221,17 +215,16 @@ class Model:
 
         # Iterate over time period to model ice melt
         todays_sie = self.max_sie
-        #insolation = self.insolationByDayOfYear()
-        insolation_df = self.insolationByDatesInRange(start_date,end_date)
+        insolation_df = self.insolationOverDateRange(start_date,end_date)
 
         print('Running model over ' + str(num_years) + ' years', file=sys.stderr)
 
         # Iterate over date range, see https://stackoverflow.com/a/63568640
         current_date = start_date
         d = 0
-
         while current_date <= end_date:
 
+            self.data['day'].append(d)
             year=current_date.year
             day_of_year = current_date.timetuple().tm_yday # integer 0 -364/5, see https://www.geeksforgeeks.org/timetuple-function-of-datetime-date-class-in-python/
 
@@ -242,42 +235,44 @@ class Model:
             #date = pd.to_datetime(date_string, format='%Y%j')
             self.data['date'].append(current_date)
 
-            # calculate melt factors
-            #todays_solar_heat =  insolation_df[insolation_df['yyyyddd']==date_string]['normalised-insolation'].values[0] # insolation on date, see https://sparkbyexamples.com/pandas/pandas-extract-column-value-based-on-another-column
-            todays_solar_heat = self.getValueByDateString(insolation_df,date_string,'normalised-insolation')
-            todays_solar_melt = self.solarMelt(todays_sie,todays_solar_heat,day_of_year) # NB: includes effect of shade
+            # calculate and record melt factors
+            todays_mean_real_insolation = self.getValueByDateString(insolation_df,date_string,'insolation') # (W/m2) 
+            todays_normalised_insolation = self.getValueByDateString(insolation_df,date_string,'normalised-insolation')
+            self.data['solar_heat'].append(todays_normalised_insolation)
 
+            sea_area_in_sunlight = self.seaAreaInSunlight(todays_sie,day_of_year) # NB: includes effect of shade
+            todays_solar_melt = self.solarMelt(sea_area_in_sunlight,todays_normalised_insolation) 
+            self.data['solar_melt'].append(todays_solar_melt)
+            
+            # Convert from mean insolation in W/m2 to MJ  (1,000,000 m2 in a km2, 1,000,000 J in a MJ)
+            days_total_insolation = todays_mean_real_insolation * (24 * 60 * 60) * sea_area_in_sunlight * self.real_area  # MJ
+            self.data['total-insolation'].append(days_total_insolation) # MJ
+
+            # calculate and record SIE losses
             todays_air_melt = self.airMelt(insolation_df,current_date)
+            self.data['air_melt'].append(todays_air_melt)
 
             todays_wind_spread = self.windSpreadLoss(day_of_year)
-            todays_ocean_melt = self.oceanHeatMelt(todays_sie)
-
-            # record values
-            self.data['day'].append(d)
-            self.data['solar_heat'].append(todays_solar_heat)
-            self.data['solar_melt'].append(todays_solar_melt)
-            self.data['ocean_melt'].append(todays_ocean_melt)
-            self.data['air_melt'].append(todays_air_melt)
             self.data['wind_spread'].append(todays_wind_spread)
+
+            todays_ocean_melt = self.oceanHeatMelt(todays_sie)
+            self.data['ocean_melt'].append(todays_ocean_melt)
 
             # calculate provisional revised SIE 
             todays_sie_loss = todays_solar_melt + todays_air_melt + todays_wind_spread  + todays_ocean_melt
             provisional_sie = todays_sie - todays_sie_loss
 
-            # use to calculate freeze component (to prevent oscillation at small SIE)
+            # calculate and record SIE increase (freeze component)
             todays_freeze = self.radiationFreeze(provisional_sie)
             self.data['freeze'].append(todays_freeze)
 
-            # calculate revised SIE 
+            # calculate and record revised SIE 
             todays_sie = todays_sie - todays_sie_loss + todays_freeze
             if todays_sie < self.min_sie:
                 todays_sie = self.min_sie
             if todays_sie > self.max_sie:
                 todays_sie = self.max_sie
             self.data['sie'].append(todays_sie)
-
-            # print(d,todays_sie, file=sys.stderr)
-            # print(d,self.data['sie'][d], file=sys.stderr)
 
             d+=1
             current_date += timedelta(days=1)

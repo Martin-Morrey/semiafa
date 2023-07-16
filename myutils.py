@@ -39,6 +39,27 @@ def maxAndMinsByYear(df, value_key, start_year, num_years, day_key='day'):
 
     return output
 
+def statsByYear(df, value_key, start_year, num_years, day_key='day'):
+    output = dict()
+    output['max'] = []
+    output['min'] = []
+    output['sum'] = []
+    output['mean'] = []
+    output['year'] = []
+
+    for y in range(num_years):
+        year_string = str(start_year + y)
+        #print(year_string, file=sys.stderr)
+        df["yyyyddd"] = df["yyyyddd"].astype(str) # make sure its a string
+        year_data = df[df["yyyyddd"].str.startswith(year_string)]
+        output['max'].append(year_data[value_key].max())
+        output['min'].append(year_data[value_key].min())
+        output['sum'].append(np.sum(year_data[value_key]))
+        output['mean'].append(np.mean(year_data[value_key]))
+        output['year'].append(year_string)
+
+    return output
+
 def meanAbsoluteDifference(df1,index_key1,value_key1,df2,index_key2,value_key2):
     # Returns mean of absolute differences between two columns of different data frames
     # Applied to the common subset in a shared index, e.g. 'yyyyddd' date string
