@@ -102,18 +102,16 @@ class Model:
         lagged_date = current_date + timedelta(days=self.air_heat_lag) 
         date_string = lagged_date.strftime('%Y%j')  # .strftime("%m-%d-%Y")
         return self.getValueByDateString(insolation_df,date_string,'normalised-insolation')
-         #return self.solarHeat(day_of_year - lag)
 
     def airMelt(self,insolation_df,current_date):
         return self.air_melt_multiplier * self.airHeat(insolation_df,current_date) / 365
 
     def seaAreaInSunlight(self,sie,day_of_year):
+        sea_area_in_sunlight = 1 - sie
         if self.shade_on:
-            sea_area = 1 - (sie + self.shadeArea(day_of_year))
-            sea_area = (abs(sea_area) + sea_area)/2 # ensure sea area always a positive or zero
-        else:
-            sea_area = 1 - sie
-        return sea_area
+            sea_area_in_sunlight -= self.shadeArea(day_of_year)
+        sea_area_in_sunlight = (abs(sea_area_in_sunlight) + sea_area_in_sunlight)/2 # positive or zero
+        return sea_area_in_sunlight
 
 
     def shadeArea(self,d):
