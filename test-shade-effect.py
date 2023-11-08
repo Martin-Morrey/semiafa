@@ -23,20 +23,20 @@ def plotResults(model_with_shade,model_no_shade):
     ax.plot(data_with_shade['date'], data_with_shade['sie'], label='16,400 km2 shade 17 May - 19 July')
 
     # shade area
+    #ax.plot(data_with_shade['date'], data_with_shade['shade_area'], label='Intervention')
+
     # convert to Pandas series for filtering, see https://www.geeksforgeeks.org/python-pandas-series/
-    dates_series =  pd.Series(data_with_shade['date'])
-    shade_area_series = pd.Series(data_with_shade['shade_area'])
+    # dates_series =  pd.Series(data_with_shade['date'])
+    # shade_area_series = pd.Series(data_with_shade['shade_area'])
+    # # use where() to filter the series, see https://sparkbyexamples.com/pandas/pandas-series-filter/
+    # filtered_shade_area = shade_area_series.where(shade_area_series != 0).dropna().tolist()
+    # filtered_dates = dates_series.where(shade_area_series != 0).dropna().tolist()
+    # ax.plot(filtered_dates, filtered_shade_area, 'bo', markersize=1, label='Intervention')
 
-    # use where() to filter the series, see https://sparkbyexamples.com/pandas/pandas-series-filter/
-    filtered_shade_area = shade_area_series.where(shade_area_series != 0).dropna().tolist()
-    filtered_dates = dates_series.where(shade_area_series != 0).dropna().tolist()
-
-    shade_area = data_with_shade['shade_area']
+    shade_area = np.array(data_with_shade['shade_area'])
     shade_area_masked = np.ma.masked_where(shade_area == 0, shade_area) # https://matplotlib.org/stable/gallery/lines_bars_and_markers/masked_demo.html
 
-    #ax.plot(data_with_shade['date'], data_with_shade['shade_area'], label='Intervention')
     ax.plot(data_with_shade['date'], shade_area_masked, label='Intervention')
-    #ax.plot(filtered_dates, filtered_shade_area, 'bo', markersize=1, label='Intervention')
 
     #ax.plot(data['day'], data['sea'], label='area of open sea')
 
