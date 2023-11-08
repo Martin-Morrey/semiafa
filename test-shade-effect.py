@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.ticker import (MultipleLocator, AutoMinorLocator)
+import matplotlib.dates as mdates
 import semiafa
 import myutils
 import sys
@@ -16,9 +17,27 @@ def plotResults(model_with_shade,model_no_shade):
     fig, ax = plt.subplots()
     data_with_shade = model_with_shade.data
     data_no_shade = model_no_shade.data
+
     # ice and sea extent
     ax.plot(data_no_shade['date'], data_no_shade['sie'], label='SIE no intervention')
-    ax.plot(data_with_shade['date'], data_with_shade['sie'], label='SIE with shade')
+    ax.plot(data_with_shade['date'], data_with_shade['sie'], label='16,400 km2 shade 17 May - 19 July')
+
+    # shade area
+    # convert to Pandas series for filtering, see https://www.geeksforgeeks.org/python-pandas-series/
+    dates_series =  pd.Series(data_with_shade['date'])
+    shade_area_series = pd.Series(data_with_shade['shade_area'])
+
+    # use where() to filter the series, see https://sparkbyexamples.com/pandas/pandas-series-filter/
+    filtered_shade_area = shade_area_series.where(shade_area_series != 0).dropna().tolist()
+    filtered_dates = dates_series.where(shade_area_series != 0).dropna().tolist()
+
+    shade_area = data_with_shade['shade_area']
+    shade_area_masked = np.ma.masked_where(shade_area == 0, shade_area) # https://matplotlib.org/stable/gallery/lines_bars_and_markers/masked_demo.html
+
+    #ax.plot(data_with_shade['date'], data_with_shade['shade_area'], label='Intervention')
+    ax.plot(data_with_shade['date'], shade_area_masked, label='Intervention')
+    #ax.plot(filtered_dates, filtered_shade_area, 'bo', markersize=1, label='Intervention')
+
     #ax.plot(data['day'], data['sea'], label='area of open sea')
 
     # insolation
@@ -31,11 +50,19 @@ def plotResults(model_with_shade,model_no_shade):
     # ax.plot(data['day'], data['freeze'], label='freeze')
     # ax.plot(data['day'], data['ocean_melt'], label='ocean melt')
 
+    # Label with month ticks, see https://stackoverflow.com/a/46556504
+    #months = mdates.MonthLocator()  # every month
+    months = mdates.MonthLocator(range(1, 13), bymonthday=1, interval=2) # https://www.programcreek.com/python/example/71849/matplotlib.dates.MonthLocator
+
+    fmt = mdates.DateFormatter('%b') # Specify the format - %b gives us Jan, Feb...
+    X = plt.gca().xaxis
+    X.set_major_locator(months)
+    X.set_major_formatter(fmt) # Specify formatter
 
     # Set plot title and labels
-    plt.title('Ice Melt Model')
-    plt.xlabel('date')
-    plt.ylabel('normalised value')
+    plt.title('Empirical Model of Sea-Ice Extent')
+    #plt.xlabel('date')
+    plt.ylabel('Normalised SIE ')
 
     # calculate x-axis tick values
     #months = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D']
@@ -68,9 +95,10 @@ if __name__ == "__main__":
     print('Applying config: ' + cfg_file, file=sys.stderr)
 
     # Hydra object instantiation, see https://hydra.cc/docs/1.2/advanced/instantiate_objects/overview/ 
-    model_with_shade = hydra.utils.instantiate(cfg.Model, num_years = 5, shade_on = True) # start_year = 2004
-    model_no_shade = hydra.utils.instantiate(cfg.Model, num_years = 5, shade_on = False)
-
+    num_years = 2
+    start_year = 2022 # start_year = 2004
+    model_with_shade = hydra.utils.instantiate(cfg.Model, num_years = num_years, shade_on = True, start_year = start_year) 
+    model_no_shade = hydra.utils.instantiate(cfg.Model, num_years = num_years, shade_on = False, start_year = start_year)
 
     #model = semiafa.Model(cfg)
     #model = semiafa.Model()
@@ -109,5 +137,5 @@ if __name__ == "__main__":
         writer.writerow(data)
 
     # ToDo: clear cache file(s)
-    #plotResults(model_with_shade,model_no_shade)
+    plotResults(model_with_shade,model_no_shade)
 

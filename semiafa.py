@@ -76,6 +76,7 @@ class Model:
         self.data['day'] = []
         self.data['sie'] = []
         self.data['solar_heat'] = []
+        self.data['shade_area'] = []
         self.data['total-insolation'] = []
         self.data['solar_melt'] = []
         self.data['ocean_melt'] = []
@@ -237,6 +238,8 @@ class Model:
             todays_mean_real_insolation = self.getValueByDateString(insolation_df,date_string,'insolation') # (W/m2) 
             todays_normalised_insolation = self.getValueByDateString(insolation_df,date_string,'normalised-insolation')
             self.data['solar_heat'].append(todays_normalised_insolation)
+
+            self.data['shade_area'].append(self.shadeArea(day_of_year))
 
             sea_area_in_sunlight = self.seaAreaInSunlight(todays_sie,day_of_year) # NB: includes effect of shade
             todays_solar_melt = self.solarMelt(sea_area_in_sunlight,todays_normalised_insolation) 
