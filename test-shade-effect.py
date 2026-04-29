@@ -19,25 +19,15 @@ def plotResults(model_with_shade,model_no_shade):
     data_no_shade = model_no_shade.data
 
     # ice and sea extent
-    ax.plot(data_no_shade['date'], data_no_shade['sie'], label='SIE no intervention')
-    ax.plot(data_with_shade['date'], data_with_shade['sie'], label='16,400 km2 shade 17 May - 19 July')
+    ax.plot(data_no_shade['date'], data_no_shade['sie'], label='SIE no shade')
+    ax.plot(data_with_shade['date'], data_with_shade['sie'], label='SIE with shade')
 
     # shade area
-    #ax.plot(data_with_shade['date'], data_with_shade['shade_area'], label='Intervention')
-
-    # convert to Pandas series for filtering, see https://www.geeksforgeeks.org/python-pandas-series/
-    # dates_series =  pd.Series(data_with_shade['date'])
-    # shade_area_series = pd.Series(data_with_shade['shade_area'])
-    # # use where() to filter the series, see https://sparkbyexamples.com/pandas/pandas-series-filter/
-    # filtered_shade_area = shade_area_series.where(shade_area_series != 0).dropna().tolist()
-    # filtered_dates = dates_series.where(shade_area_series != 0).dropna().tolist()
-    # ax.plot(filtered_dates, filtered_shade_area, 'bo', markersize=1, label='Intervention')
-
     shade_area = np.array(data_with_shade['shade_area'])
     shade_area_masked = np.ma.masked_where(shade_area == 0, shade_area) # https://matplotlib.org/stable/gallery/lines_bars_and_markers/masked_demo.html
+    ax.plot(data_with_shade['date'], shade_area_masked, label='Shade applied')
 
-    ax.plot(data_with_shade['date'], shade_area_masked, label='Intervention')
-
+    # open sea
     #ax.plot(data['day'], data['sea'], label='area of open sea')
 
     # insolation
@@ -60,9 +50,12 @@ def plotResults(model_with_shade,model_no_shade):
     X.set_major_formatter(fmt) # Specify formatter
 
     # Set plot title and labels
-    plt.title('Empirical Model of Sea-Ice Extent')
+    plt.title('Empirical Model of Sea-Ice Extent (SIE)')
     #plt.xlabel('date')
-    plt.ylabel('Normalised SIE ')
+    plt.ylabel('Normalised SIE')
+
+    # Y axis
+    plt.ylim(0, 1.05)
 
     # calculate x-axis tick values
     #months = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D']
@@ -81,6 +74,16 @@ def plotResults(model_with_shade,model_no_shade):
 
 if __name__ == "__main__":
 
+    # ======================= Define the Shade Scenario =======================================
+
+    total_area = 8200000 # Area of Central Arctic in MAISIE-NH is ~8,200,000 km2
+    sunshade_area = 2
+    num_sunshades = 2000
+    normalised_shade_area = (sunshade_area * num_sunshades) / total_area
+    #shade_area: 0.002  # For 2.0km2 sunshade, 0.0002 is 1,640 km2 (~800 sunshades) 0.002 is 16,400 km2 (~8000 sunshades)
+
+
+    # ======================= Set-Up the Config =======================================
 
     # Quick and dirty approach, see https://stackoverflow.com/a/73813430
     hydra.core.global_hydra.GlobalHydra.instance().clear() # see https://www.sscardapane.it/tutorials/hydra-tutorial/
@@ -94,32 +97,34 @@ if __name__ == "__main__":
     cfg = hydra.compose(config_name=cfg_file)
     print('Applying config: ' + cfg_file, file=sys.stderr)
 
+    # ======================= Run the Scenarios =======================================
+
     # Hydra object instantiation, see https://hydra.cc/docs/1.2/advanced/instantiate_objects/overview/ 
     num_years = 2
     start_year = 2022 # start_year = 2004
-    model_with_shade = hydra.utils.instantiate(cfg.Model, num_years = num_years, shade_on = True, start_year = start_year) 
-    model_no_shade = hydra.utils.instantiate(cfg.Model, num_years = num_years, shade_on = False, start_year = start_year)
 
-    #model = semiafa.Model(cfg)
-    #model = semiafa.Model()
+    model_no_shade = hydra.utils.instantiate(cfg.Model, num_years = num_years, shade_on = False, start_year = start_year)
+    model_with_shade = hydra.utils.instantiate(cfg.Model, num_years = num_years, shade_on = True, start_year = start_year, shade_area = normalised_shade_area) 
+    #model = semiafa.Model(cfg) # OLD APPROACH
 
     data_with_shade = model_with_shade.runModel()
     data_no_shade = model_no_shade.runModel()
 
-    # create data frame from dictionary
-    df_with_shade = pd.DataFrame.from_dict(data_with_shade) # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.from_dict.html
+    # ============================ Analyse the Results ============================================
+
+    # Create Pandas Data Frame from Model Dictionary
     df_no_shade = pd.DataFrame.from_dict(data_no_shade) # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.from_dict.html
-    #df.set_index('day')
+    df_with_shade = pd.DataFrame.from_dict(data_with_shade) # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.from_dict.html
 
-    # sie_no_shade = myutils.maxAndMinsByDay(df_no_shade,'sie',model_no_shade.num_years)
-    # sie_with_shade = myutils.maxAndMinsByDay(df_with_shade,'sie',model_with_shade.num_years)
-
-    sie_no_shade = myutils.statsByYear(df_no_shade,'sie',model_no_shade.start_year,model_no_shade.num_years)
+    # SIE Analysis Dictionaries
+    sie_no_shade = myutils.statsByYear(df_no_shade,'sie',model_no_shade.start_year,model_no_shade.num_years) 
     sie_with_shade = myutils.statsByYear(df_with_shade,'sie',model_with_shade.start_year,model_with_shade.num_years)
 
+    # Solar Heat Analysis Dictionaries
     solar_heat_no_shade = myutils.statsByYear(df_no_shade,'total-insolation',model_no_shade.start_year,model_no_shade.num_years)
     solar_heat_with_shade = myutils.statsByYear(df_with_shade,'total-insolation',model_with_shade.start_year,model_with_shade.num_years)
 
+    # ===================== Write Summary of Results to STDOUT ==============================
 
     writer = csv.writer(sys.stdout)
 
@@ -133,8 +138,22 @@ if __name__ == "__main__":
         full_solar_heat = solar_heat_no_shade['sum'][y]
         reduced_solar_heat = solar_heat_with_shade['sum'][y]
         solar_heat_delta = full_solar_heat - reduced_solar_heat
-        data = [year, sie_no_shade['min'][y], sie_no_shade['max'][y], sie_with_shade['min'][y], sie_with_shade['max'][y], diff, shade_multiplier, full_solar_heat, reduced_solar_heat ,solar_heat_delta ]
+
+        # put output data into a list
+        data = [year]
+        # areas in integer units of km2
+        data.append(round(sie_no_shade['min'][y] * total_area))
+        data.append(round(sie_no_shade['max'][y] * total_area))
+        data.append(round(sie_with_shade['min'][y] * total_area))
+        data.append(round(sie_with_shade['max'][y] * total_area))
+        data.append(round(diff * total_area))
+        # append other values
+        data = data + [shade_multiplier, full_solar_heat, reduced_solar_heat, solar_heat_delta]
+        #data = [year, sie_no_shade['min'][y], sie_no_shade['max'][y], sie_with_shade['min'][y], sie_with_shade['max'][y], diff, shade_multiplier, full_solar_heat, reduced_solar_heat ,solar_heat_delta ]
+        
         writer.writerow(data)
+
+    # ===================== Plot the Scenarios ==============================
 
     # ToDo: clear cache file(s)
     plotResults(model_with_shade,model_no_shade)
