@@ -2,7 +2,7 @@ import pandas as pd
 import sys
 import matplotlib.pyplot as plt
 import semiafa
-import maisie
+import masie
 import myutils
 import csv
 
@@ -20,26 +20,26 @@ if __name__ == "__main__":
 
     # Instantiate the SeaIceRecord object
     if len(sys.argv) < 2:
-        maisieRecord = hydra.utils.instantiate(cfg.Maisie)
+        masieRecord = hydra.utils.instantiate(cfg.masie)
     else:
-        maisieRecord = hydra.utils.instantiate(cfg.Maisie,csv_file_path=sys.argv[1])
+        masieRecord = hydra.utils.instantiate(cfg.masie,csv_file_path=sys.argv[1])
    
-    maisie_df = maisieRecord.readMaisie()
+    masie_df = masieRecord.readmasie()
 
     fig, ax = plt.subplots()
 
     # ice and sea extent
-    #ax.plot(maisie_df['date'], maisie_df['Marginal and Central Normalised'], label='MAISIE Central and Marginal Seas')
-    seas = maisieRecord.column_names
+    #ax.plot(masie_df['date'], masie_df['Marginal and Central Normalised'], label='masie Central and Marginal Seas')
+    seas = masieRecord.column_names
 
     sie_min_max = {}
-    num_years = (maisieRecord.end_year - maisieRecord.start_year) + 1
-    maisie_df_n = maisie_df.copy()
+    num_years = (masieRecord.end_year - masieRecord.start_year) + 1
+    masie_df_n = masie_df.copy()
     # compare the seas
     for sea in seas:
-        maisie_df_n[sea] = myutils.normaliseList(maisie_df[sea])
-        ax.plot(maisie_df_n['date'], maisie_df_n[sea], label=sea)       
-        sie_min_max[sea] = myutils.maxAndMinsByYear(maisie_df,sea,maisieRecord.start_year,num_years)
+        masie_df_n[sea] = myutils.normaliseList(masie_df[sea])
+        ax.plot(masie_df_n['date'], masie_df_n[sea], label=sea)       
+        sie_min_max[sea] = myutils.maxAndMinsByYear(masie_df,sea,masieRecord.start_year,num_years)
 
 
     headers = ['year'] + seas
@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
 
     # Set plot title and labels
-    plt.title('MAISIE Data vs Ice Melt Model')
+    plt.title('masie Data vs Ice Melt Model')
     plt.xlabel('month/year')
     plt.ylabel('normalised value')
 

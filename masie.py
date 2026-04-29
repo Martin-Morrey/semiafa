@@ -18,7 +18,7 @@ class SeaIceRecord:
         self.start_year = start_year
         self.end_year = end_year
 
-    def maisieDateStringToDate(self,data):
+    def masieDateStringToDate(self,data):
         # https://blog.hubspot.com/website/pandas-split-string
         # days = data['yyyyddd'].str[-3:]
         # years = data['yyyyddd'].str[0:3] 
@@ -37,26 +37,26 @@ class SeaIceRecord:
 # hydra.core.global_hydra.GlobalHydra.instance().clear() # see https://www.sscardapane.it/tutorials/hydra-tutorial/
 # hydra.initialize(version_base=None, config_path="config")
 # cfg = hydra.compose(config_name="config") 
-# ToDo - replace with hydra initialisation of Maisie object
+# ToDo - replace with hydra initialisation of masie object
 
-    def readMaisie(self):
+    def readmasie(self):
 
         try:
-            # Read the MAISIE CSV file into a Pandas DataFrame
-            maisie_df = pd.read_csv(self.csv_file_path)
-            #print(maisie_df)
+            # Read the masie CSV file into a Pandas DataFrame
+            masie_df = pd.read_csv(self.csv_file_path)
+            #print(masie_df)
 
             # select data from the marginal seas and central arctic only
             #column_names = [' (1) Beaufort_Sea',' (2) Chukchi_Sea',' (3) East_Siberian_Sea',' (4) Laptev_Sea',' (5) Kara_Sea',' (6) Barents_Sea',' (11) Central_Arctic']
             
-            # Arguably should include Greenland Sea and Baffin Bay, but MAISIE takes these quite far south 
+            # Arguably should include Greenland Sea and Baffin Bay, but masie takes these quite far south 
             # https://nsidc.org/data/masie/explore-region
             # https://en.wikipedia.org/wiki/Polar_circle#/media/File:Arctic_circle.svg
 
-            # sum the sie values in the specified column-names in the MAISIE CSV
-            maisie_df['Marginal and Central']=maisie_df[self.column_names].sum(axis=1)
+            # sum the sie values in the specified column-names in the masie CSV
+            masie_df['Marginal and Central']=masie_df[self.column_names].sum(axis=1)
 
-            df = self.maisieDateStringToDate(maisie_df)
+            df = self.masieDateStringToDate(masie_df)
             #df[' (0) Northern_Hemisphere'] = myutils.normaliseList(df[' (0) Northern_Hemisphere'])
             df['Marginal and Central Normalised'] = myutils.normaliseList(df['Marginal and Central'])
 

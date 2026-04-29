@@ -76,7 +76,7 @@ if __name__ == "__main__":
 
     # ======================= Define the Shade Scenario =======================================
 
-    total_area = 8200000 # Area of Central Arctic in MAISIE-NH is ~8,200,000 km2
+    total_area = 8200000 # Area of Central Arctic in masie-NH is ~8,200,000 km2
     sunshade_area = 2
     num_sunshades = 2000
     normalised_shade_area = (sunshade_area * num_sunshades) / total_area
@@ -128,13 +128,13 @@ if __name__ == "__main__":
 
     writer = csv.writer(sys.stdout)
 
-    header = ['year', 'min SIE no shade', 'max SIE no shade', 'min SIE with shade', 'max SIE with shade' ,'diff in minimums', 'shade multiplier','solar heat no shade (MJ)', 'solar heat with shade(MJ)','solar heat delta (MJ)']
+    header = ['year', 'min SIE no shade', 'max SIE no shade', 'min SIE with shade', 'max SIE with shade' ,'shade area','solar heat no shade (MJ)', 'solar heat with shade(MJ)','solar heat delta (MJ)']
     writer.writerow(header)
 
     for y in range(model_with_shade.num_years):
         year = str(y + model_no_shade.start_year)
-        diff = sie_with_shade['min'][y] - sie_no_shade['min'][y]
-        shade_multiplier = diff / model_with_shade.shade_area
+        #diff = sie_with_shade['min'][y] - sie_no_shade['min'][y]
+        #shade_multiplier = diff / model_with_shade.shade_area
         full_solar_heat = solar_heat_no_shade['sum'][y]
         reduced_solar_heat = solar_heat_with_shade['sum'][y]
         solar_heat_delta = full_solar_heat - reduced_solar_heat
@@ -146,9 +146,9 @@ if __name__ == "__main__":
         data.append(round(sie_no_shade['max'][y] * total_area))
         data.append(round(sie_with_shade['min'][y] * total_area))
         data.append(round(sie_with_shade['max'][y] * total_area))
-        data.append(round(diff * total_area))
+        data.append(round(model_with_shade.shade_area * total_area))
         # append other values
-        data = data + [shade_multiplier, full_solar_heat, reduced_solar_heat, solar_heat_delta]
+        data = data + [full_solar_heat, reduced_solar_heat, solar_heat_delta]
         #data = [year, sie_no_shade['min'][y], sie_no_shade['max'][y], sie_with_shade['min'][y], sie_with_shade['max'][y], diff, shade_multiplier, full_solar_heat, reduced_solar_heat ,solar_heat_delta ]
         
         writer.writerow(data)

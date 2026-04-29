@@ -114,7 +114,7 @@ def meanAbsoluteDifference(df1,index_key1,value_key1,df2,index_key2,value_key2):
 
   
 def adjustedCostFunction(df1,index_key1,value_key1,df2,index_key2,value_key2,start_year,end_year,weight):
-    # called with meanDiff = myutils.meanAbsoluteDifference(maisie_df,'yyyyddd','Marginal and Central Normalised',model_data_df,'yyyyddd','sie')
+    # called with meanDiff = myutils.meanAbsoluteDifference(masie_df,'yyyyddd','Marginal and Central Normalised',model_data_df,'yyyyddd','sie')
 
     mean_abs_diff = meanAbsoluteDifference(df1,index_key1,value_key1,df2,index_key2,value_key2)
 

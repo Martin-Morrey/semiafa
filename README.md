@@ -31,15 +31,15 @@ Far from an exhaustive list, but here goes:
 <table>
 <tr><th>Script</th><th>Action</th><th>Notes</th></tr>
 <tr><td><i>test-shade-effect.py</i></td><td>Run the model twice, with and without shade, and compare the results</td><td>This fulfils the ultimate purpose of the model, to estimate the impact of a shading intervention on Arctic sea-ice extent</td></tr>
-<tr><td><i>plot-MAISIE-model-comparison.py</i></td><td>Compare the MAISIE input data with the model output</td><td>To review how well the simple empirical model predicts SIE, compared to the input data it is optimised on.</td></tr>
-<tr><td><i>plot-MAISIE-data.py</i></td><td>View the input data on sea-ice extent</td><td></td></tr>
+<tr><td><i>plot-masie-model-comparison.py</i></td><td>Compare the masie input data with the model output</td><td>To review how well the simple empirical model predicts SIE, compared to the input data it is optimised on.</td></tr>
+<tr><td><i>plot-masie-data.py</i></td><td>View the input data on sea-ice extent</td><td></td></tr>
 <tr><td><i>optimise.py</i></td><td>Used with Hydra framework to optimse the parameters of the model</td><td>More info in "Optuna Sweeper Optimisation" below</td></tr>
 <tr><td><i>semiafa.py</i></td><td>the model code itself</td><td>normally called by one of the above scripts</td></tr>
 </table>
 
 ## Pseudo Physical Parameters of the Model
 
-The simple empirical model is configured with a limited set of parameters set-out in the table below.  These parameters are optimised by minimising a cost function based on the delta between the model output and the input data from MAISIE.
+The simple empirical model is configured with a limited set of parameters set-out in the table below.  These parameters are optimised by minimising a cost function based on the delta between the model output and the input data from masie.
 
 <table>
 <tr><th>Name</th><th>Description</th><th>Optimised value</th></tr>
@@ -70,7 +70,7 @@ To configure and run Optuna:
 
 ## Configuration Notes
 
-To get a consist total frozen area in winter, select only the geographically bounded zones in the MAISIE-NH data, i.e.:
+To get a consist total frozen area in winter, select only the geographically bounded zones in the masie-NH data, i.e.:
 
 ```regions: [' (1) Beaufort_Sea',' (2) Chukchi_Sea',' (3) East_Siberian_Sea',' (4) Laptev_Sea',' (5) Kara_Sea',' (11) Central_Arctic']``` 
 

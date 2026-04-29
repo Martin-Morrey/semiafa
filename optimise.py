@@ -14,8 +14,8 @@ def optimiseModel(cfg: DictConfig) -> float:
         raise RuntimeError("cfg.error is True")
 
     # Instantiate the SeaIceRecord object
-    maisieRecord = hydra.utils.instantiate(cfg.Maisie) # 2006 - 2023
-    maisie_df = maisieRecord.readMaisie()
+    masieRecord = hydra.utils.instantiate(cfg.masie) # 2006 - 2023
+    masie_df = masieRecord.readmasie()
 
     # Instantiate model object with optimiser config 
     # start model a couple of years before MAISE to let it settle down
@@ -27,12 +27,12 @@ def optimiseModel(cfg: DictConfig) -> float:
     # create data frame from model dictionary
     model_data_df = pd.DataFrame.from_dict(model_data) # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.from_dict.html
 
-    # calculate difference between MAISIE data and model
-    #meanDiff = myutils.meanAbsoluteDifference(maisie_df,'yyyyddd','Marginal and Central Normalised',model_data_df,'yyyyddd','sie')
-    ###meanDiff = myutils.meanTopBiasedAbsoluteDifference(maisie_df,'yyyyddd','Marginal and Central Normalised',model_data_df,'yyyyddd','sie')
+    # calculate difference between masie data and model
+    #meanDiff = myutils.meanAbsoluteDifference(masie_df,'yyyyddd','Marginal and Central Normalised',model_data_df,'yyyyddd','sie')
+    ###meanDiff = myutils.meanTopBiasedAbsoluteDifference(masie_df,'yyyyddd','Marginal and Central Normalised',model_data_df,'yyyyddd','sie')
     #return meanDiff
 
-    adjustedCost = myutils.adjustedCostFunction(maisie_df,'yyyyddd','Marginal and Central Normalised',model_data_df,'yyyyddd','sie',cfg.Optimiser.start_year,cfg.Optimiser.end_year,cfg.Optimiser.ice_maximum_shortfall_cost)
+    adjustedCost = myutils.adjustedCostFunction(masie_df,'yyyyddd','Marginal and Central Normalised',model_data_df,'yyyyddd','sie',cfg.Optimiser.start_year,cfg.Optimiser.end_year,cfg.Optimiser.ice_maximum_shortfall_cost)
     return adjustedCost
     
 
