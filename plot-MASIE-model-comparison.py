@@ -40,7 +40,8 @@ if __name__ == "__main__":
     fig, ax = plt.subplots()
 
     # ice and sea extent
-    ax.plot(masie_df['date'], masie_df['Marginal and Central Normalised'], label='masie Central and Marginal Seas')
+    # ax.plot(masie_df['date'], masie_df['Marginal and Central Normalised'], label='masie Central and Marginal Seas')
+    ax.plot(masie_df['date'], masie_df['Marginal and Central Rescaled'], label='masie Central and Marginal Seas')
 
     # Instantiate model object with Hydra config, see https://hydra.cc/docs/1.2/advanced/instantiate_objects/overview/ 
     #model = hydra.utils.instantiate(cfg.Model, start_year = 2004, num_years = 20, shade_on = False) # override config
@@ -53,7 +54,8 @@ if __name__ == "__main__":
     model_data_df = pd.DataFrame.from_dict(model_data) # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.from_dict.html
 
     # calculate difference between masie data and model
-    meanDiff = myutils.meanAbsoluteDifference(masie_df,'yyyyddd','Marginal and Central Normalised',model_data_df,'yyyyddd','sie')
+    #meanDiff = myutils.meanAbsoluteDifference(masie_df,'yyyyddd','Marginal and Central Normalised',model_data_df,'yyyyddd','sie')
+    meanDiff = myutils.meanAbsoluteDifference(masie_df,'yyyyddd','Marginal and Central Rescaled',model_data_df,'yyyyddd','sie')
     print(meanDiff)
 
     ax.plot(model_data['date'],model_data['sie'], label='Modelled SIE')

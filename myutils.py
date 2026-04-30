@@ -151,22 +151,20 @@ def meanAbsoluteDifference(df1,index_key1,value_key1,df2,index_key2,value_key2):
 
   
 def adjustedCostFunction(df1,index_key1,value_key1,df2,index_key2,value_key2,start_year,end_year,weight):
-    # called with meanDiff = myutils.meanAbsoluteDifference(masie_df,'yyyyddd','Marginal and Central Normalised',model_data_df,'yyyyddd','sie')
 
     mean_abs_diff = meanAbsoluteDifference(df1,index_key1,value_key1,df2,index_key2,value_key2)
 
     num_years = (end_year - start_year) - 1
 
-    # 'Marginal and Central Normalised'
-    sie_minmax_masie = maxAndMinsByYear(df1,value_key1,start_year,num_years)
+    sie_minmax_observations = maxAndMinsByYear(df1,value_key1,start_year,num_years)
     sie_minmax_model = maxAndMinsByYear(df2,value_key2,start_year,num_years)
 
     total_model_shortfall = 0
     for y in range(num_years):
-        max_masie = sie_minmax_masie['max'][y]
+        max_observations = sie_minmax_observations['max'][y]
         max_model = sie_minmax_model['max'][y]
-        shortfall = max_masie - max_model
-        total_model_shortfall += (shortfall + abs(shortfall))/2 # 0 if model > masie
+        shortfall = max_observations - max_model
+        total_model_shortfall += (shortfall + abs(shortfall))/2 # 0 if model > observations
 
     mean_model_shortfall = total_model_shortfall / num_years
     adjustment = mean_model_shortfall * weight

@@ -75,12 +75,16 @@ def plotResults(model_with_shade,model_no_shade):
 if __name__ == "__main__":
 
     # ======================= Define the Shade Scenario =======================================
-
-    total_area = 8200000 # Area of Central Arctic in masie-NH is ~8,200,000 km2
+    (masie_min, masie_max) = (2933846,8204782) # ToDo - replace with values directly derived from MASIE data specified in config
+    #total_area = 8200000 # Area of Central Arctic in masie-NH is ~8,200,000 km2
     sunshade_area = 2
     num_sunshades = 2000
-    normalised_shade_area = (sunshade_area * num_sunshades) / total_area
+    total_shade_area = sunshade_area * num_sunshades
+    # normalised_shade_area = (sunshade_area * num_sunshades) / total_area # WRONG!!! this is rescaling, MASIE data was normalised
+    # normalised_shade_area = myutils.normaliseValue(total_shade_area, masie_min, masie_max) # ALSO WRONG !!!  Area is out of range of the normalised MASIE data
+
     #shade_area: 0.002  # For 2.0km2 sunshade, 0.0002 is 1,640 km2 (~800 sunshades) 0.002 is 16,400 km2 (~8000 sunshades)
+    rescaled_shade_area = myutils.rescaleValue(total_shade_area, masie_max)
 
 
     # ======================= Set-Up the Config =======================================
@@ -104,7 +108,7 @@ if __name__ == "__main__":
     start_year = 2022 # start_year = 2004
 
     model_no_shade = hydra.utils.instantiate(cfg.Model, num_years = num_years, shade_on = False, start_year = start_year)
-    model_with_shade = hydra.utils.instantiate(cfg.Model, num_years = num_years, shade_on = True, start_year = start_year, shade_area = normalised_shade_area) 
+    model_with_shade = hydra.utils.instantiate(cfg.Model, num_years = num_years, shade_on = True, start_year = start_year, shade_area = rescaled_shade_area) 
     #model = semiafa.Model(cfg) # OLD APPROACH
 
     data_with_shade = model_with_shade.runModel()
@@ -141,12 +145,17 @@ if __name__ == "__main__":
 
         # put output data into a list
         data = [year]
-        # areas in integer units of km2
-        data.append(round(sie_no_shade['min'][y] * total_area))
-        data.append(round(sie_no_shade['max'][y] * total_area))
-        data.append(round(sie_with_shade['min'][y] * total_area))
-        data.append(round(sie_with_shade['max'][y] * total_area))
-        data.append(round(model_with_shade.shade_area * total_area))
+        # put areas into integer units of km2, by denormalising using properties of MASIE source data
+        # data.append(round(sie_no_shade['min'][y] * total_area)) # this was stupid and wrong
+        # data.append(round(sie_no_shade['max'][y] * total_area))
+        # data.append(round(sie_with_shade['min'][y] * total_area))
+        # data.append(round(sie_with_shade['max'][y] * total_area))
+        # data.append(round(model_with_shade.shade_area * total_area))
+        data.append( round( myutils.denormaliseValue(sie_no_shade['min'][y],masie_min,masie_max) ) )
+        data.append( round( myutils.denormaliseValue(sie_no_shade['max'][y],masie_min,masie_max) ) )
+        data.append( round( myutils.denormaliseValue(sie_with_shade['min'][y],masie_min,masie_max) ) )
+        data.append( round( myutils.denormaliseValue(sie_with_shade['max'][y],masie_min,masie_max) ) )
+        data.append( round( myutils.denormaliseValue(model_with_shade.shade_area,masie_min,masie_max) ) )
         # append other values
         data = data + [full_solar_heat, reduced_solar_heat, solar_heat_delta]
         #data = [year, sie_no_shade['min'][y], sie_no_shade['max'][y], sie_with_shade['min'][y], sie_with_shade['max'][y], diff, shade_multiplier, full_solar_heat, reduced_solar_heat ,solar_heat_delta ]

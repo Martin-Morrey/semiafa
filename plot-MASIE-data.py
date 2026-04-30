@@ -28,8 +28,7 @@ if __name__ == "__main__":
 
     fig, ax = plt.subplots()
 
-    # ice and sea extent
-    #ax.plot(masie_df['date'], masie_df['Marginal and Central Normalised'], label='masie Central and Marginal Seas')
+    # Plot Ice or Sea Extent
 
     # Uncomment the following to sea total of land bound seas
     # seas = []
@@ -49,6 +48,7 @@ if __name__ == "__main__":
         sie_min_max[sea] = myutils.maxAndMinsByYear(masie_df,sea,masieRecord.start_year,num_years)
 
     if len(seas) == 0:
+        # OLD ax.plot(masie_df['date'], masie_df['Marginal and Central Normalised'], label='masie Central and Marginal Seas')
         ax.plot(masie_df['date'], masie_df['Marginal and Central Rescaled'], label='Marginal and Central Rescaled')
     
     if len(seas) > 0:

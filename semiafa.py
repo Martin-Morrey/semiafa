@@ -186,7 +186,8 @@ class Model:
 
                 current_date += timedelta(days=1)
 
-            insolation_df['normalised-insolation'] = myutils.normaliseList(insolation_df['insolation'].values.tolist())
+            # insolation_df['normalised-insolation'] = myutils.normaliseList(insolation_df['insolation'].values.tolist())
+            insolation_df['normalised-insolation'] = myutils.rescaleList(insolation_df['insolation'].values.tolist())
             if (self.insolation_file != ''):
                 insolation_df.to_pickle(self.insolation_file)
             #return myutils.normaliseList(insolation) #(insolation-np.min(insolation))/(np.max(insolation)-np.min(insolation))

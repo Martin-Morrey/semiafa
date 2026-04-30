@@ -28,11 +28,8 @@ def optimiseModel(cfg: DictConfig) -> float:
     model_data_df = pd.DataFrame.from_dict(model_data) # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.from_dict.html
 
     # calculate difference between masie data and model
-    #meanDiff = myutils.meanAbsoluteDifference(masie_df,'yyyyddd','Marginal and Central Normalised',model_data_df,'yyyyddd','sie')
-    ###meanDiff = myutils.meanTopBiasedAbsoluteDifference(masie_df,'yyyyddd','Marginal and Central Normalised',model_data_df,'yyyyddd','sie')
-    #return meanDiff
-
-    adjustedCost = myutils.adjustedCostFunction(masie_df,'yyyyddd','Marginal and Central Normalised',model_data_df,'yyyyddd','sie',cfg.Optimiser.start_year,cfg.Optimiser.end_year,cfg.Optimiser.ice_maximum_shortfall_cost)
+    # adjustedCost = myutils.adjustedCostFunction(masie_df,'yyyyddd','Marginal and Central Normalised',model_data_df,'yyyyddd','sie',cfg.Optimiser.start_year,cfg.Optimiser.end_year,cfg.Optimiser.ice_maximum_shortfall_cost)
+    adjustedCost = myutils.adjustedCostFunction(masie_df,'yyyyddd','Marginal and Central Rescaled',model_data_df,'yyyyddd','sie',cfg.Optimiser.start_year,cfg.Optimiser.end_year,cfg.Optimiser.ice_maximum_shortfall_cost)
     return adjustedCost
     
 
