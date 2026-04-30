@@ -4,9 +4,46 @@ import numpy as np
 import sys
 import pandas as pd
 
+# ================== Normalisation Functions =========================
+# see https://www.statology.org/numpy-normalize-between-0-and-1/
+
+def denormaliseList(normalised_list,source_list):
+    # reverse the normaliseList process (below) for a list of normalised values
+    return (normalised_list *  (np.max(source_list) - np.min(source_list)) + - np.min(source_list))
+
+def denormaliseValue(normalised_value,source_min,source_max):
+    # reverse the normaliseValue process (below) based on the properties of a list
+    return ((normalised_value * (source_max - source_min)) + source_min)
+
 def normaliseList(my_list):
-    # normalise a list of numbers, see https://www.statology.org/numpy-normalize-between-0-and-1/
+    # normalise a list of numbers
     return  (my_list - np.min(my_list)) / (np.max(my_list) - np.min(my_list))
+
+def normaliseValue(my_value,source_min,source_max):
+    # normalise a number based on properties of a list
+    return  (my_value - source_min) / (source_max - source_min)
+
+
+# ================== Rescaling Functions =========================
+# see https://medium.com/geekculture/scaling-vs-normalization-are-they-the-same-348035afe5ca
+
+def deRescaleList(rescaled_list,source_list):
+    # reverse the normaliseList process (below) for a list of normalised values
+    return (rescaled_list * np.max(source_list) )
+
+def deRescaleValue(rescaled_value,source_max):
+    # reverse the normaliseValue process (below) based on the properties of a list
+    return (rescaled_value * source_max)
+
+def rescaleList(my_list):
+    # rescale a list of quantities, 
+    return  ( my_list / np.max(my_list) )
+
+def rescaleValue(my_value,source_max):
+    # rescale a quantity based on properties of a list
+    return  (my_value / source_max )
+
+# ======================================================================
 
 def maxAndMinsByDay(df, value_key, num_years, day_key='day'):
     output = dict()

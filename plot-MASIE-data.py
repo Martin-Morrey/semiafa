@@ -30,26 +30,36 @@ if __name__ == "__main__":
 
     # ice and sea extent
     #ax.plot(masie_df['date'], masie_df['Marginal and Central Normalised'], label='masie Central and Marginal Seas')
-    seas = masieRecord.column_names
 
+    # Uncomment the following to sea total of land bound seas
+    # seas = []
+    
+    # Uncomment the following to see plots and stats for the individual seas
+    seas = masieRecord.column_names # "regions" read from Hydra config
+
+    # Extract data for the individual seas in the list
     sie_min_max = {}
     num_years = (masieRecord.end_year - masieRecord.start_year) + 1
     masie_df_n = masie_df.copy()
     # compare the seas
     for sea in seas:
-        masie_df_n[sea] = myutils.normaliseList(masie_df[sea])
+        # masie_df_n[sea] = myutils.normaliseList(masie_df[sea])
+        masie_df_n[sea] = myutils.rescaleList(masie_df[sea]) # comment out to peak at real values
         ax.plot(masie_df_n['date'], masie_df_n[sea], label=sea)       
         sie_min_max[sea] = myutils.maxAndMinsByYear(masie_df,sea,masieRecord.start_year,num_years)
 
-
-    headers = ['year'] + seas
-    writer = csv.writer(sys.stdout)
-    writer.writerow(headers)
-    for y in range(num_years):
-        value_list = [y]
-        for sea in seas:
-            value_list.append(sie_min_max[sea]['max'][y])
-        writer.writerow(value_list)
+    if len(seas) == 0:
+        ax.plot(masie_df['date'], masie_df['Marginal and Central Rescaled'], label='Marginal and Central Rescaled')
+    
+    if len(seas) > 0:
+        headers = ['year'] + seas
+        writer = csv.writer(sys.stdout)
+        writer.writerow(headers)
+        for y in range(num_years):
+            value_list = [y]
+            for sea in seas:
+                value_list.append(sie_min_max[sea]['max'][y])
+            writer.writerow(value_list)
 
 
     # for y in range(model_with_shade.num_years):
@@ -62,9 +72,9 @@ if __name__ == "__main__":
 
 
     # Set plot title and labels
-    plt.title('masie Data vs Ice Melt Model')
+    plt.title('Rescaled Masie Data For Land-Bound Seas')
     plt.xlabel('month/year')
-    plt.ylabel('normalised value')
+    plt.ylabel('rescaled value')
 
     # Add a legend
     plt.legend()

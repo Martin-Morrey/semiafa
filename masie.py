@@ -14,16 +14,12 @@ class SeaIceRecord:
 
     def __init__(self, csv_file_path: str, regions: list, start_year: int = 2007, end_year:int = 2022):
         self.csv_file_path = csv_file_path
-        self.column_names = regions
+        self.column_names = regions # Arctic regions used for model, i.e. land-bound / marginal seas + Central Arctic
         self.start_year = start_year
         self.end_year = end_year
 
     def masieDateStringToDate(self,data):
         # https://blog.hubspot.com/website/pandas-split-string
-        # days = data['yyyyddd'].str[-3:]
-        # years = data['yyyyddd'].str[0:3] 
-        # data['day']= days
-        # data['year'] = years
 
         try:
             # Convert the date string to datetime using the specified format
@@ -33,11 +29,10 @@ class SeaIceRecord:
         except ValueError:
             return None  # Return None if the date string is not in the expected format
 
-# Quick and dirty approach, see https://stackoverflow.com/a/73813430
+# OLD Quick and dirty approach, see https://stackoverflow.com/a/73813430
 # hydra.core.global_hydra.GlobalHydra.instance().clear() # see https://www.sscardapane.it/tutorials/hydra-tutorial/
 # hydra.initialize(version_base=None, config_path="config")
 # cfg = hydra.compose(config_name="config") 
-# ToDo - replace with hydra initialisation of masie object
 
     def readmasie(self):
 
@@ -54,11 +49,12 @@ class SeaIceRecord:
             # https://en.wikipedia.org/wiki/Polar_circle#/media/File:Arctic_circle.svg
 
             # sum the sie values in the specified column-names in the masie CSV
-            masie_df['Marginal and Central']=masie_df[self.column_names].sum(axis=1)
+            masie_df['Marginal and Central']=masie_df[self.column_names].sum(axis=1) # regions read from hydra config (see above)
 
             df = self.masieDateStringToDate(masie_df)
             #df[' (0) Northern_Hemisphere'] = myutils.normaliseList(df[' (0) Northern_Hemisphere'])
             df['Marginal and Central Normalised'] = myutils.normaliseList(df['Marginal and Central'])
+            df['Marginal and Central Rescaled'] = myutils.rescaleList(df['Marginal and Central'])
 
             return df
             
