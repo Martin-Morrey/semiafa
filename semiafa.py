@@ -102,7 +102,7 @@ class Model:
     def airHeat(self,insolation_df,current_date):
         lagged_date = current_date + timedelta(days=self.air_heat_lag) 
         date_string = lagged_date.strftime('%Y%j')  # .strftime("%m-%d-%Y")
-        return self.getValueByDateString(insolation_df,date_string,'normalised-insolation')
+        return self.getValueByDateString(insolation_df,date_string,'rescaled-insolation')
 
     def airMelt(self,insolation_df,current_date):
         return self.air_melt_multiplier * self.airHeat(insolation_df,current_date) / 365
@@ -187,7 +187,7 @@ class Model:
                 current_date += timedelta(days=1)
 
             # insolation_df['normalised-insolation'] = myutils.normaliseList(insolation_df['insolation'].values.tolist())
-            insolation_df['normalised-insolation'] = myutils.rescaleList(insolation_df['insolation'].values.tolist())
+            insolation_df['rescaled-insolation'] = myutils.rescaleList(insolation_df['insolation'].values.tolist())
             if (self.insolation_file != ''):
                 insolation_df.to_pickle(self.insolation_file)
             #return myutils.normaliseList(insolation) #(insolation-np.min(insolation))/(np.max(insolation)-np.min(insolation))
@@ -237,13 +237,13 @@ class Model:
 
             # calculate and record melt factors
             todays_mean_real_insolation = self.getValueByDateString(insolation_df,date_string,'insolation') # (W/m2) 
-            todays_normalised_insolation = self.getValueByDateString(insolation_df,date_string,'normalised-insolation')
-            self.data['solar_heat'].append(todays_normalised_insolation)
+            todays_rescaled_insolation = self.getValueByDateString(insolation_df,date_string,'rescaled-insolation')
+            self.data['solar_heat'].append(todays_rescaled_insolation)
 
             self.data['shade_area'].append(self.shadeArea(day_of_year))
 
             sea_area_in_sunlight = self.seaAreaInSunlight(todays_sie,day_of_year) # NB: includes effect of shade
-            todays_solar_melt = self.solarMelt(sea_area_in_sunlight,todays_normalised_insolation) 
+            todays_solar_melt = self.solarMelt(sea_area_in_sunlight,todays_rescaled_insolation) 
             self.data['solar_melt'].append(todays_solar_melt)
             
             # Convert from mean insolation in W/m2 to MJ  (1,000,000 m2 in a km2, 1,000,000 J in a MJ)
