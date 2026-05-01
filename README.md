@@ -7,7 +7,10 @@ It was designed to be used to for testing the order-of-magnitude impact of targe
 
 The pseudo-physical parameters used for modelling the physical processes affecting Arctic SIE, including the ice-albedo feedback, are set-out in the table below.
 
-[MASIE-NH data on SIE from the NSIDC](https://nsidc.org/data/masie/about-masie) is currently used as the training data set, but in theory any similar data on sea-ice extent could be used.
+Training data on SIE:
+- [MASIE-NH data on SIE from the NSIDC](https://nsidc.org/data/masie/about-masie)
+    - MASIE NSIDC/NIC Sea Ice Product G02186 - Daily Ice Extent by Region in Square Kilometers
+- In theory any similar data on sea-ice extent could be used.
 
 ## Limitations of the Model
 Far from an exhaustive list, but here goes:
