@@ -19,7 +19,8 @@ if __name__ == "__main__":
     #cfg = hydra.compose(config_name="2023-06-20_optimised-config_run2")
     #cfg = hydra.compose(config_name="2023-06-24_optimised-config")
     #cfg = hydra.compose(config_name="2023-07-06_optimised-config")
-    cfg_file = "optimised-config_imsc-40p0"
+    #cfg_file = "optimised-config_imsc-40p0"
+    cfg_file = "optimised-config_rescaled1_2026-05-01.yaml"
     cfg = hydra.compose(config_name=cfg_file)
     print('Applying config: ' + cfg_file, file=sys.stderr)
 
@@ -40,8 +41,8 @@ if __name__ == "__main__":
     fig, ax = plt.subplots()
 
     # ice and sea extent
-    # ax.plot(masie_df['date'], masie_df['Marginal and Central Normalised'], label='masie Central and Marginal Seas')
-    ax.plot(masie_df['date'], masie_df['Marginal and Central Rescaled'], label='masie Central and Marginal Seas')
+    # ax.plot(masie_df['date'], masie_df['Specified Regions Normalised'], label='masie Central and Marginal Seas')
+    ax.plot(masie_df['date'], masie_df['Specified Regions Rescaled'], label='Specified MASIE Regions')
 
     # Instantiate model object with Hydra config, see https://hydra.cc/docs/1.2/advanced/instantiate_objects/overview/ 
     #model = hydra.utils.instantiate(cfg.Model, start_year = 2004, num_years = 20, shade_on = False) # override config
@@ -55,7 +56,7 @@ if __name__ == "__main__":
 
     # calculate difference between masie data and model
     #meanDiff = myutils.meanAbsoluteDifference(masie_df,'yyyyddd','Marginal and Central Normalised',model_data_df,'yyyyddd','sie')
-    meanDiff = myutils.meanAbsoluteDifference(masie_df,'yyyyddd','Marginal and Central Rescaled',model_data_df,'yyyyddd','sie')
+    meanDiff = myutils.meanAbsoluteDifference(masie_df,'yyyyddd','Specified Regions Rescaled',model_data_df,'yyyyddd','sie')
     print(meanDiff)
 
     ax.plot(model_data['date'],model_data['sie'], label='Modelled SIE')

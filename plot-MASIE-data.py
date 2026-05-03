@@ -31,8 +31,7 @@ if __name__ == "__main__":
     # Plot Ice or Sea Extent
 
     # Uncomment the following to sea total of land bound seas
-    # seas = []
-    
+    #seas = []
     # Uncomment the following to see plots and stats for the individual seas
     seas = masieRecord.column_names # "regions" read from Hydra config
 
@@ -43,13 +42,13 @@ if __name__ == "__main__":
     # compare the seas
     for sea in seas:
         # masie_df_n[sea] = myutils.normaliseList(masie_df[sea])
-        masie_df_n[sea] = myutils.rescaleList(masie_df[sea]) # comment out to peak at real values
+        masie_df_n[sea] = myutils.rescaleList(masie_df[sea]) # comment-out to see real values
         ax.plot(masie_df_n['date'], masie_df_n[sea], label=sea)       
         sie_min_max[sea] = myutils.maxAndMinsByYear(masie_df,sea,masieRecord.start_year,num_years)
 
     if len(seas) == 0:
-        # OLD ax.plot(masie_df['date'], masie_df['Marginal and Central Normalised'], label='masie Central and Marginal Seas')
-        ax.plot(masie_df['date'], masie_df['Marginal and Central Rescaled'], label='Marginal and Central Rescaled')
+        # OLD ax.plot(masie_df['date'], masie_df['Specified Regions Normalised'], label='masie Central and Marginal Seas')
+        ax.plot(masie_df['date'], masie_df['Specified Regions Rescaled'], label='Marginal and Central Rescaled')
     
     if len(seas) > 0:
         headers = ['year'] + seas

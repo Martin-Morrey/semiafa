@@ -38,5 +38,8 @@ Model:
   shade_area: 0.001  # total area of ice cap approx 15,000,000 km2, shading 2000km2 is 0.000244,  
 masie:
   _target_: masie.SeaIceRecord
-  csv_file_path: masie_data/2023-06-01/masie_4km_allyears_extent_sqkm.csv
+  #csv_file_path: masie_data/2023-06-01/masie_4km_allyears_extent_sqkm.csv
+  #csv_file_path: masie_data/2026-05-01/masie_4km_allyears_extent_sqkm.csv
+  csv_file_path: masie_data/2026-05-01/masie_1km_allyears_extent_sqkm.csv
+
   regions: [' (1) Beaufort_Sea',' (2) Chukchi_Sea',' (3) East_Siberian_Sea',' (4) Laptev_Sea',' (5) Kara_Sea',' (11) Central_Arctic'] # 8.2M km2

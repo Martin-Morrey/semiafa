@@ -49,12 +49,12 @@ class SeaIceRecord:
             # https://en.wikipedia.org/wiki/Polar_circle#/media/File:Arctic_circle.svg
 
             # sum the sie values in the specified column-names in the masie CSV
-            masie_df['Marginal and Central']=masie_df[self.column_names].sum(axis=1) # regions read from hydra config (see above)
+            masie_df['Specified Regions']=masie_df[self.column_names].sum(axis=1) # regions read from hydra config (see above)
 
             df = self.masieDateStringToDate(masie_df)
             #df[' (0) Northern_Hemisphere'] = myutils.normaliseList(df[' (0) Northern_Hemisphere'])
-            df['Marginal and Central Normalised'] = myutils.normaliseList(df['Marginal and Central'])
-            df['Marginal and Central Rescaled'] = myutils.rescaleList(df['Marginal and Central'])
+            df['Specified Regions Normalised'] = myutils.normaliseList(df['Specified Regions'])
+            df['Specified Regions Rescaled'] = myutils.rescaleList(df['Specified Regions'])
 
             return df
             

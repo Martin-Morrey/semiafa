@@ -52,7 +52,7 @@ def plotResults(model_with_shade,model_no_shade):
     # Set plot title and labels
     plt.title('Empirical Model of Sea-Ice Extent (SIE)')
     #plt.xlabel('date')
-    plt.ylabel('Normalised SIE')
+    plt.ylabel('Rescaled SIE')
 
     # Y axis
     plt.ylim(0, 1.05)
@@ -75,14 +75,17 @@ def plotResults(model_with_shade,model_no_shade):
 if __name__ == "__main__":
 
     # ======================= Define the Shade Scenario =======================================
-    (masie_min, masie_max) = (2933846,8204782) # ToDo - replace with values directly derived from MASIE data specified in config
-    #total_area = 8200000 # Area of Central Arctic in masie-NH is ~8,200,000 km2
+    # ToDo - replace masie_min, masie_max with values directly derived from MASIE data specified in config
+    # (masie_min, masie_max) = (2933846,8204782) # all geographically bound, inc central arctic
+    (masie_min, masie_max) = (312153, 4956787) # marginal seas only, min of 312153 was in 2012
+
     sunshade_area = 2
     num_sunshades = 2000
     total_shade_area = sunshade_area * num_sunshades
+
+    # ========================= Rescale Sunshade Area Just Like Total Area =============
     # normalised_shade_area = (sunshade_area * num_sunshades) / total_area # WRONG!!! this is rescaling, MASIE data was normalised
     # normalised_shade_area = myutils.normaliseValue(total_shade_area, masie_min, masie_max) # ALSO WRONG !!!  Area is out of range of the normalised MASIE data
-
     #shade_area: 0.002  # For 2.0km2 sunshade, 0.0002 is 1,640 km2 (~800 sunshades) 0.002 is 16,400 km2 (~8000 sunshades)
     rescaled_shade_area = myutils.rescaleValue(total_shade_area, masie_max)
 
@@ -92,12 +95,14 @@ if __name__ == "__main__":
     # Quick and dirty approach, see https://stackoverflow.com/a/73813430
     hydra.core.global_hydra.GlobalHydra.instance().clear() # see https://www.sscardapane.it/tutorials/hydra-tutorial/
     hydra.initialize(version_base=None, config_path="config")
+
     #cfg = hydra.compose(config_name="2023-06-11_optimised-config_run2") # max SIE 0.997, significant multiplier effect
     #cfg = hydra.compose(config_name="2023-06-20_optimised-config") # best_value: 0.04107893468035606
     #cfg = hydra.compose(config_name="2023-07-06_optimised-config_run2") 
     #cfg = hydra.compose(config_name="2023-07-07_optimised-config_run1")
+    # cfg_file = "optimised-config_imsc-40p0"
+    cfg_file = "optimised-config_rescaled1_2026-05-01.yaml"
 
-    cfg_file = "optimised-config_imsc-40p0"
     cfg = hydra.compose(config_name=cfg_file)
     print('Applying config: ' + cfg_file, file=sys.stderr)
 
@@ -151,11 +156,18 @@ if __name__ == "__main__":
         # data.append(round(sie_with_shade['min'][y] * total_area))
         # data.append(round(sie_with_shade['max'][y] * total_area))
         # data.append(round(model_with_shade.shade_area * total_area))
-        data.append( round( myutils.denormaliseValue(sie_no_shade['min'][y],masie_min,masie_max) ) )
-        data.append( round( myutils.denormaliseValue(sie_no_shade['max'][y],masie_min,masie_max) ) )
-        data.append( round( myutils.denormaliseValue(sie_with_shade['min'][y],masie_min,masie_max) ) )
-        data.append( round( myutils.denormaliseValue(sie_with_shade['max'][y],masie_min,masie_max) ) )
-        data.append( round( myutils.denormaliseValue(model_with_shade.shade_area,masie_min,masie_max) ) )
+
+        # data.append( round( myutils.denormaliseValue(sie_no_shade['min'][y],masie_min,masie_max) ) )
+        # data.append( round( myutils.denormaliseValue(sie_no_shade['max'][y],masie_min,masie_max) ) )
+        # data.append( round( myutils.denormaliseValue(sie_with_shade['min'][y],masie_min,masie_max) ) )
+        # data.append( round( myutils.denormaliseValue(sie_with_shade['max'][y],masie_min,masie_max) ) )
+
+        data.append( round( myutils.deRescaleValue(sie_no_shade['min'][y],masie_max) ) )
+        data.append( round( myutils.deRescaleValue(sie_no_shade['max'][y],masie_max) ) )
+        data.append( round( myutils.deRescaleValue(sie_with_shade['min'][y],masie_max) ) )
+        data.append( round( myutils.deRescaleValue(sie_with_shade['max'][y],masie_max) ) )
+
+        data.append( total_shade_area )
         # append other values
         data = data + [full_solar_heat, reduced_solar_heat, solar_heat_delta]
         #data = [year, sie_no_shade['min'][y], sie_no_shade['max'][y], sie_with_shade['min'][y], sie_with_shade['max'][y], diff, shade_multiplier, full_solar_heat, reduced_solar_heat ,solar_heat_delta ]
