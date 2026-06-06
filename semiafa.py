@@ -45,9 +45,10 @@ class Model:
     shade_start: int
     shade_stop: int
     shade_area: float  # total area of ice cap approx 15,000,000 km2, shading 2000km2 is 0.000133r,
+    shade_targeting_factor: float # 0 - 1, where 1 = perfectly targeted shade, 0 = random shade
     data: dict
 
-    def __init__(self,num_years: int, air_heat_lag: int, air_melt_multiplier: float, ice_power: float, ice_freeze_multiplier: float, sun_melt_multiplier: float, lat_for_insolation_calc: float, max_sie: float , min_sie: float, ocean_heat_melt_multiplier: float, insolation_year: int, insolation_file: str, start_year: int, wind_spread_start: int, wind_spread_stop: int, wind_spread_rate: float, real_area: float, shade_on: bool, shade_start: int, shade_stop: int, shade_area: float) -> None:
+    def __init__(self,num_years: int, air_heat_lag: int, air_melt_multiplier: float, ice_power: float, ice_freeze_multiplier: float, sun_melt_multiplier: float, lat_for_insolation_calc: float, max_sie: float , min_sie: float, ocean_heat_melt_multiplier: float, insolation_year: int, insolation_file: str, start_year: int, wind_spread_start: int, wind_spread_stop: int, wind_spread_rate: float, real_area: float, shade_on: bool, shade_start: int, shade_stop: int, shade_area: float, shade_targeting_factor: float) -> None:
 
         # initialisation from Hydra config, see https://hydra.cc/docs/1.2/advanced/instantiate_objects/overview/
         self.num_years = num_years
@@ -71,7 +72,7 @@ class Model:
         self.shade_start = shade_start
         self.shade_stop = shade_stop
         self.shade_area = shade_area
-   
+        self.shade_targeting_factor = shade_targeting_factor
         self.data = dict()
         self.data['day'] = []
         self.data['sie'] = []
@@ -108,18 +109,26 @@ class Model:
         return self.air_melt_multiplier * self.airHeat(insolation_df,current_date) / 365
 
     def seaAreaInSunlight(self,sie,day_of_year):
-        sea_area_in_sunlight = 1 - sie
+        total_area = 1
+        sea_area_in_sunlight = total_area - sie # range of 0 - 1
         if self.shade_on:
-            sea_area_in_sunlight -= self.shadeArea(day_of_year)
+            # sea_area_in_sunlight = sea_area_in_sunlight - self.shadeArea(day_of_year) # OLD
+            sea_area_in_sunlight = sea_area_in_sunlight - self.usefulShadeArea(sie,day_of_year) # NEW
         sea_area_in_sunlight = (abs(sea_area_in_sunlight) + sea_area_in_sunlight)/2 # positive or zero
         return sea_area_in_sunlight
-
 
     def shadeArea(self,d):
         if d >= self.shade_start and d < self.shade_stop:
             return self.shade_area
         else:
             return 0
+
+    def usefulShadeArea(self,sie,day_of_year):
+        # ToDo - allow for (lack of) targeting of shade
+        targeting_factor = self.shade_targeting_factor # (0-1) - 0: shade is distributed over whole area, 1: shade is 100% targeted at open sea
+        shade_area = self.shadeArea(day_of_year) # area shaded, if all shade targeted at open sea
+        wasted_shade_area = shade_area * sie * (1 - targeting_factor) # i.e. if targeting_factor = 1, wasted_shade_area = 0
+        return shade_area - wasted_shade_area
 
     def windSpreadLoss(self,d):
         if d >= self.wind_spread_start and d < self.wind_spread_stop:
