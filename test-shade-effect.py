@@ -80,7 +80,7 @@ if __name__ == "__main__":
     (masie_min, masie_max) = (312153, 4956787) # marginal seas only, min of 312153 was in 2012
 
     sunshade_area = 2
-    num_sunshades = 2000
+    num_sunshades = 4000
     total_shade_area = sunshade_area * num_sunshades
 
     # ========================= Rescale Sunshade Area Just Like Total Area =============
@@ -101,7 +101,8 @@ if __name__ == "__main__":
     #cfg = hydra.compose(config_name="2023-07-06_optimised-config_run2") 
     #cfg = hydra.compose(config_name="2023-07-07_optimised-config_run1")
     # cfg_file = "optimised-config_imsc-40p0"
-    cfg_file = "optimised-config_rescaled1_2026-05-01.yaml"
+    #cfg_file = "optimised-config_rescaled1_2026-05-01.yaml"
+    cfg_file = "optimised-config_rescaled1_2026-06-09.yaml"
 
     cfg = hydra.compose(config_name=cfg_file)
     print('Applying config: ' + cfg_file, file=sys.stderr)
@@ -111,12 +112,28 @@ if __name__ == "__main__":
     # Hydra object instantiation, see https://hydra.cc/docs/1.2/advanced/instantiate_objects/overview/ 
     num_years = 2
     start_year = 2022 # start_year = 2004
+    
+    # Set-up various shade scenarios, overriding shading attributes in the specified config
+    model_no_shade = hydra.utils.instantiate(cfg.Model, 
+                                             num_years = num_years,
+                                             start_year = start_year, 
+                                             shade_on = False)
 
-    model_no_shade = hydra.utils.instantiate(cfg.Model, num_years = num_years, shade_on = False, start_year = start_year)
-    model_with_shade = hydra.utils.instantiate(cfg.Model, num_years = num_years, shade_on = True, start_year = start_year, shade_area = rescaled_shade_area) 
-    #model = semiafa.Model(cfg) # OLD APPROACH
+    model_targeted_shade = hydra.utils.instantiate(cfg.Model, 
+                                               num_years = num_years, 
+                                               start_year = start_year, 
+                                               shade_on = True, 
+                                               shade_area = rescaled_shade_area,
+                                               shade_targeting_factor = 1)
 
-    data_with_shade = model_with_shade.runModel()
+    model_untargeted_shade = hydra.utils.instantiate(cfg.Model, 
+                                               num_years = num_years, 
+                                               start_year = start_year, 
+                                               shade_on = True, 
+                                               shade_area = rescaled_shade_area,
+                                               shade_targeting_factor = 0) 
+
+    data_with_shade = model_targeted_shade.runModel()
     data_no_shade = model_no_shade.runModel()
 
     # ============================ Analyse the Results ============================================
@@ -126,12 +143,12 @@ if __name__ == "__main__":
     df_with_shade = pd.DataFrame.from_dict(data_with_shade) # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.from_dict.html
 
     # SIE Analysis Dictionaries
-    sie_no_shade = myutils.statsByYear(df_no_shade,'sie',model_no_shade.start_year,model_no_shade.num_years) 
-    sie_with_shade = myutils.statsByYear(df_with_shade,'sie',model_with_shade.start_year,model_with_shade.num_years)
+    sie_no_shade = myutils.statsByYear(df_no_shade,'sie',start_year,num_years) 
+    sie_with_shade = myutils.statsByYear(df_with_shade,'sie',start_year,num_years)
 
     # Solar Heat Analysis Dictionaries
-    solar_heat_no_shade = myutils.statsByYear(df_no_shade,'total-insolation',model_no_shade.start_year,model_no_shade.num_years)
-    solar_heat_with_shade = myutils.statsByYear(df_with_shade,'total-insolation',model_with_shade.start_year,model_with_shade.num_years)
+    solar_heat_no_shade = myutils.statsByYear(df_no_shade,'total-insolation',start_year,num_years)
+    solar_heat_with_shade = myutils.statsByYear(df_with_shade,'total-insolation',start_year,num_years)
 
     # ===================== Write Summary of Results to STDOUT ==============================
 
@@ -140,28 +157,18 @@ if __name__ == "__main__":
     header = ['year', 'min SIE no shade', 'max SIE no shade', 'min SIE with shade', 'max SIE with shade' ,'shade area','solar heat no shade (MJ)', 'solar heat with shade(MJ)','solar heat delta (MJ)']
     writer.writerow(header)
 
-    for y in range(model_with_shade.num_years):
-        year = str(y + model_no_shade.start_year)
+    for y in range(num_years):
+        year = str(y + start_year)
         #diff = sie_with_shade['min'][y] - sie_no_shade['min'][y]
         #shade_multiplier = diff / model_with_shade.shade_area
         full_solar_heat = solar_heat_no_shade['sum'][y]
         reduced_solar_heat = solar_heat_with_shade['sum'][y]
         solar_heat_delta = full_solar_heat - reduced_solar_heat
 
-        # put output data into a list
+        # start list for appending output data by year
         data = [year]
-        # put areas into integer units of km2, by denormalising using properties of MASIE source data
-        # data.append(round(sie_no_shade['min'][y] * total_area)) # this was stupid and wrong
-        # data.append(round(sie_no_shade['max'][y] * total_area))
-        # data.append(round(sie_with_shade['min'][y] * total_area))
-        # data.append(round(sie_with_shade['max'][y] * total_area))
-        # data.append(round(model_with_shade.shade_area * total_area))
 
-        # data.append( round( myutils.denormaliseValue(sie_no_shade['min'][y],masie_min,masie_max) ) )
-        # data.append( round( myutils.denormaliseValue(sie_no_shade['max'][y],masie_min,masie_max) ) )
-        # data.append( round( myutils.denormaliseValue(sie_with_shade['min'][y],masie_min,masie_max) ) )
-        # data.append( round( myutils.denormaliseValue(sie_with_shade['max'][y],masie_min,masie_max) ) )
-
+        # put areas into integer units of km2, by de-rescaling using properties of MASIE source data
         data.append( round( myutils.deRescaleValue(sie_no_shade['min'][y],masie_max) ) )
         data.append( round( myutils.deRescaleValue(sie_no_shade['max'][y],masie_max) ) )
         data.append( round( myutils.deRescaleValue(sie_with_shade['min'][y],masie_max) ) )
@@ -177,5 +184,5 @@ if __name__ == "__main__":
     # ===================== Plot the Scenarios ==============================
 
     # ToDo: clear cache file(s)
-    plotResults(model_with_shade,model_no_shade)
+    plotResults(model_targeted_shade,model_no_shade)
 

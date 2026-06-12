@@ -171,3 +171,22 @@ def adjustedCostFunction(df1,index_key1,value_key1,df2,index_key2,value_key2,sta
 
     return mean_abs_diff + adjustment
 
+def timeboundCostFunction(df1,value_key1,df2,value_key2,start_year,end_year):
+    # calculate absolute diff only for the years are interested in
+    # assumes index key is 'yyyyddd'
+    #mean_abs_diff = meanAbsoluteDifference(df1,index_key1,value_key1,df2,index_key2,value_key2)
+
+    num_years = (end_year - start_year) - 1
+
+    # calculate a diff for each year separately
+    diff = []
+    for y in range(num_years):
+        year_string = str(start_year + y)
+        #print(year_string, file=sys.stderr)
+        df1["yyyyddd"] = df1["yyyyddd"].astype(str) # make sure its a string
+        df2["yyyyddd"] = df2["yyyyddd"].astype(str) # make sure its a string
+        year_data_1 = df1[df1["yyyyddd"].str.startswith(year_string)]
+        year_data_2 = df2[df2["yyyyddd"].str.startswith(year_string)]
+        diff.append(meanAbsoluteDifference(year_data_1,'yyyyddd',value_key1,year_data_2,'yyyyddd',value_key2))
+
+    return sum(diff) / len(diff) # return mean diff over all the years in the range

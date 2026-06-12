@@ -46,13 +46,55 @@ The simple empirical model is configured with a limited set of parameters set-ou
 
 <table>
 <tr><th>Name</th><th>Description</th><th>Optimised value</th></tr>
-<tr><td>solar heat multiplier</td><td>relative melting rate from a date-dependent normalised insolation</td><td>23.8</td></tr>
-<tr><td>ocean heat multiplier</td><td>relative melting rate from a constant ocean heat input</td><td>0.5</td><tr>
-<tr><td>air melt multiplier</td><td>relative melting rate from date-dependent normalised air heat </td><td>1.0</td><tr>
-<tr><td>air heat lag</td><td>time days of lag between air heat and solar heat</td><td>7</td><tr>
-<tr><td>ice freeze multiplier</td><td>relative freezing rate of open sea</td><td>7.7</td><tr>
-<tr><td>ice power</td><td>power relation between extent of open sea and freezing rate</td><td>0.5</td><tr>
+<tr><td>solar_heat_multiplier</td><td>relative melting rate from a date-dependent rescaled insolation</td><td>23.8</td></tr>
+<tr><td>ocean_heat_multiplier</td><td>relative melting rate from a constant ocean heat input</td><td>0.5</td><tr>
+<tr><td>air_heat_lag</td><td>time in days between notional solar-driven air heat and direct solar heat</td><td>7</td><tr>
+<tr><td>air_melt_multiplier</td><td>relative melting rate from date-dependent notional air heat</td><td>1.0</td><tr>
+<tr><td>ice_freeze_multiplier</td><td>relative freezing rate of open sea</td><td>7.7</td><tr>
+<tr><td>ice_power</td><td>power relation between extent of open sea and freezing rate</td><td>0.5</td><tr>
+<tr><td>final_freeze_multiplier</td>degree of accelerated final freeze, needed to reach full SIE in winter</td><td></td></tr>
 </table>
+
+## Other Configuration Parameters
+
+### Model - General
+<table>
+<tr><th>Name</th><th>Typical Value(s) Used</th><th>Description</th></tr>
+
+<tr><td>lat_for_insolation_calc</td><td>75</td><td>representative latitude for approximate insolation</td></tr>
+<tr><td>max_sie</td><td>0.99999</td><td>used to prevent infinities, should be close to 1</td></tr>
+<tr><td>min_sie</td><td>0.00001</td><td>used to prevent infinities, should be close to 0</td></tr>
+<tr><td>insolation_year</td><td>2010</td><td>doesn't really matter, pick a year</td></tr>
+<tr><td>insolation_file</td><td>cache/insolation.pkl</td><td>.pkl file for caching insolation data</td></tr>
+<tr><td>start_year</td><td>2004 - 2026</td><td>start year for model run, typically 2 years before start of MASIE data for parameter optimisation runs</td></tr>
+<tr><td>num_years</td><td>2-22</td><td>number of years to run model over - long for parameter optimisation runs, short for shading tests</td></tr>
+<tr><td>wind_spread_start</td><td>136</td><td>day we assume wind starts exposing open sea (first of month April:91, May:121)</td></tr>
+<tr><td>wind_spread_stop</td><td>156</td><td>day we stop wind exposure of open sea # data indicates ~50,000 km2 by day 150, but highly variable</td></tr>
+<tr><td>wind_spread_rate</td><td>0.0002, 0.0003</td><td>proportion of total area exposed by wind daily,0.0002 (marginal seas,5M km2) 0.0003 (whole of central arctic 8M km2) represent ~2,500km2 (x 20 days give 50,000)</td></tr>
+</table>
+
+### Model - Shade Experiments
+<table>
+<tr><th>Name</th><th>Typical Value(s) Used</th><th>Description</th></tr>
+
+<tr><td>shade_on</td><td>No/Yes</td><td>apply a shade intervention (always "No" in parameter optimisation runs)</td></tr>
+<tr><td>shade_start</td><td>137</td><td>day we start shade intervention (if any)</td></tr>
+<tr><td>shade_stop</td><td>201</td><td>day we stop shade intervention (if any)</td></tr>
+<tr><td>shade_area</td><td>0.002</td><td>relative area to which to apply shade</td></tr>
+<tr><td>shade_targeting_factor</td><td>1 or 0</td><td>0: shade is distributed over whole area, 1: shade is targeted at open sea 100% of the time</td></tr>
+</table>
+
+### Use of MASIE Data on Sea-Ice Extent
+
+### Configuration Notes
+
+To get a consist total frozen area in winter, select only the geographically bounded zones in the masie-NH data, i.e.:
+
+```regions: [' (1) Beaufort_Sea',' (2) Chukchi_Sea',' (3) East_Siberian_Sea',' (4) Laptev_Sea',' (5) Kara_Sea',' (11) Central_Arctic']``` 
+
+See https://nsidc.org/data/masie/explore-region
+
+
 
 ## Optuna Sweeper Optimisation
 The Optuna optimiser works as a sweeper plugin for the Hydra config framework, see https://hydra.cc/docs/plugins/optuna_sweeper/.
@@ -70,14 +112,6 @@ To configure and run Optuna:
     - *cache/insolation.pkl*
 - **IMPORTANT**:  If the overall time period or latitude range is changed, the above .pkl file must be removed the next time the model is run
     - It won't detect a discrepancy automatically.   To fix this is on the to-do list (below)
-
-## Configuration Notes
-
-To get a consist total frozen area in winter, select only the geographically bounded zones in the masie-NH data, i.e.:
-
-```regions: [' (1) Beaufort_Sea',' (2) Chukchi_Sea',' (3) East_Siberian_Sea',' (4) Laptev_Sea',' (5) Kara_Sea',' (11) Central_Arctic']``` 
-
-See https://nsidc.org/data/masie/explore-region
 
 ## To Do List
  - include an automatic check that date range of specified insolation .pkl is compatible with current run

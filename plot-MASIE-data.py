@@ -42,7 +42,7 @@ if __name__ == "__main__":
     # compare the seas
     for sea in seas:
         # masie_df_n[sea] = myutils.normaliseList(masie_df[sea])
-        masie_df_n[sea] = myutils.rescaleList(masie_df[sea]) # comment-out to see real values
+        # masie_df_n[sea] = myutils.rescaleList(masie_df[sea]) # comment-out to see real values
         ax.plot(masie_df_n['date'], masie_df_n[sea], label=sea)       
         sie_min_max[sea] = myutils.maxAndMinsByYear(masie_df,sea,masieRecord.start_year,num_years)
 

@@ -20,7 +20,8 @@ if __name__ == "__main__":
     #cfg = hydra.compose(config_name="2023-06-24_optimised-config")
     #cfg = hydra.compose(config_name="2023-07-06_optimised-config")
     #cfg_file = "optimised-config_imsc-40p0"
-    cfg_file = "optimised-config_rescaled1_2026-05-01.yaml"
+    # cfg_file = "optimised-config_rescaled1_2026-05-01.yaml"
+    cfg_file = "optimised-config_rescaled1_2026-06-11.yaml"
     cfg = hydra.compose(config_name=cfg_file)
     print('Applying config: ' + cfg_file, file=sys.stderr)
 
@@ -40,10 +41,6 @@ if __name__ == "__main__":
 
     fig, ax = plt.subplots()
 
-    # ice and sea extent
-    # ax.plot(masie_df['date'], masie_df['Specified Regions Normalised'], label='masie Central and Marginal Seas')
-    ax.plot(masie_df['date'], masie_df['Specified Regions Rescaled'], label='Specified MASIE Regions')
-
     # Instantiate model object with Hydra config, see https://hydra.cc/docs/1.2/advanced/instantiate_objects/overview/ 
     #model = hydra.utils.instantiate(cfg.Model, start_year = 2004, num_years = 20, shade_on = False) # override config
     model = hydra.utils.instantiate(cfg.Model, shade_on = False) # override config
@@ -59,18 +56,15 @@ if __name__ == "__main__":
     meanDiff = myutils.meanAbsoluteDifference(masie_df,'yyyyddd','Specified Regions Rescaled',model_data_df,'yyyyddd','sie')
     print(meanDiff)
 
+    # ice and sea extent
+    # ax.plot(masie_df['date'], masie_df['Specified Regions Normalised'], label='masie Central and Marginal Seas')
+    ax.plot(masie_df['date'], masie_df['Specified Regions Rescaled'], label='Rescaled MASIE SIE in the Marginal Seas')
+
     ax.plot(model_data['date'],model_data['sie'], label='Modelled SIE')
     #ax.plot(model_data['date'],model_data['solar_heat'], label='model Solar Heat')
 
-    # To Do
-    # normalise masie data based on mean yearly-maximum, or by dropping outliers
-    # - Return mean square difference between masie and model results for optimiser
-    # - - get yyyyddd keys out of masie_df, and use to filter model_data
-    # - - put SIE from both into a single dataframe, diff values, and square
-    # - - calc mean value of the column
-
     # Set plot title and labels
-    plt.title('masie Data vs Ice Melt Model')
+    plt.title('MASIE SIE vs SEMIAFA Model')
     plt.xlabel('year')
     plt.ylabel('normalised value')
 
@@ -79,3 +73,10 @@ if __name__ == "__main__":
 
     # Show the plot
     plt.show()
+
+    # To Do
+    # normalise masie data based on mean yearly-maximum, or by dropping outliers
+    # - Return mean square difference between masie and model results for optimiser
+    # - - get yyyyddd keys out of masie_df, and use to filter model_data
+    # - - put SIE from both into a single dataframe, diff values, and square
+    # - - calc mean value of the column

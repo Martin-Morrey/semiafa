@@ -2,53 +2,58 @@ defaults:
   - override hydra/sweeper: optuna
   - override hydra/sweeper/sampler: tpe
 hydra:
+  mode: MULTIRUN # use hydra "--multirun" by default, see https://hydra.cc/docs/tutorials/basic/running_your_app/multi-run/
   sweeper:
     sampler:
       seed: 123
     direction: minimize
     study_name: optimiser
     storage: null
-    n_trials: 200
+    n_trials: 2000
     n_jobs: 1 # 1 used in example, -1 supposedly enables use of all available resources, but seems to launch 0 jobs
     #max_failure_rate: 0.0
     params:
-      Model.air_heat_lag: range(-42, 42, step=7) # 7
-      Model.air_melt_multiplier: range(0.5, 1, step=0.1) # 0.8
+      Model.air_heat_lag: range(-56, 42, step=7) # NB: May need to change max_air_heat_lag in the model (currently 140)
+      Model.air_melt_multiplier: range(0.5, 3, step=0.1) # 0.8
       Model.ice_power: range(0.3, 1.2, step=0.1) # 0.5 # 0 - 1
-      Model.ice_freeze_multiplier: range(1, 20, step=0.1) 
-      Model.sun_melt_multiplier: range(15, 25, step=0.2)  # 25.5 #10 # useful range 18 - 25
-      Model.ocean_heat_melt_multiplier: range(0, 0.5, step=0.025)  # : 0.25
+      Model.ice_freeze_multiplier: range(5, 15, step=0.5) 
+      Model.final_freeze_multiplier: range(0,0.00002, step=0.000001) # NEW parameter
+      Model.sun_melt_multiplier: range(15, 35, step=0.5)  # 25.5 #10 # useful range 18 - 25
+      Model.ocean_heat_melt_multiplier: range(0, 0.4, step=0.02)  # : 0.25
 Model:
   _target_: semiafa.Model
-  num_years: 20
   # parameters to be optimised
   air_heat_lag: 7
   air_melt_multiplier: 0.3 # useful range 3 - 5
   ice_power: 0.5 # 0 - 1
   ice_freeze_multiplier: 4.7 # useful range 4.5 -  , when ice_power is 0.5, 
+  final_freeze_multiplier: 0
   sun_melt_multiplier: 25.5 #10 # useful range 18 - 25
   ocean_heat_melt_multiplier: 0.25
-  #
+
+  # other parameters
+  real_area:  4956787 # 8200000
   lat_for_insolation_calc: 75 # representative latitude for approximate insolation
   max_sie: 0.99999
   min_sie: 0.00001
   insolation_year: 2010
   insolation_file: cache/insolation.pkl # .pkl file for caching insolation data
-  start_year: 2004 # Allow a couple of years to settle when comparing with masie 4KM starts 2006, MAISE 1KM starts 2014
+  start_year: 2006 # Allow a couple of years to settle when comparing with masie 4KM starts 2006, MAISE 1KM starts 2014
+  num_years: 20
   wind_spread_start: 136 #  - first of each month J:1, F:32, M:60, A:91, M:121 
   wind_spread_stop: 156 # ~ 50,000 km2 by day 150, but highly variable
-  wind_spread_rate: 0.0003 # proportion of ice area exposed by wind daily, 5000km2 is ~0.0006
+  wind_spread_rate: 0.0003 # proportion of ice area exposed by wind daily, 5000km2 is ~0.0006, 0.0002 (marginal seas,5M km2) 0.0003 (whole of central arctic 8M km2)
   shade_on: No
-  shade_start: 137
-  shade_stop: 201
-  shade_area: 0.002  # total area of ice cap approx 15,000,000 km2, shading 2000km2 is 0.000244, 
-  real_area: 8200000
+  shade_targeting_factor: 1 # IRRELEVANT FOR OPTIMISER
+  shade_start: 137 # IRRELEVANT FOR OPTIMISER
+  shade_stop: 201 # IRRELEVANT FOR OPTIMISER
+  shade_area: 0.002   # IRRELEVANT FOR OPTIMISER
 masie:
   _target_: masie.SeaIceRecord
   # csv_file_path: masie_data/2023-06-01/masie_4km_allyears_extent_sqkm.csv
   csv_file_path: masie_data/2026-05-01/masie_4km_allyears_extent_sqkm.csv
   regions: [' (1) Beaufort_Sea',' (2) Chukchi_Sea',' (3) East_Siberian_Sea',' (4) Laptev_Sea',' (5) Kara_Sea'] #,' (11) Central_Arctic'] # 8.2M km2
 Optimiser:
-  start_year: 2007
+  start_year: 2008 # after step change in sea-ice thickness - Sumatra 2023
   end_year: 2025 # 2022
-  ice_maximum_shortfall_cost:  0.0 # imsc 40.0
+  #ice_maximum_shortfall_cost:  0.0 # imsc 40.0

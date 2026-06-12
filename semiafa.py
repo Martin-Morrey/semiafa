@@ -48,7 +48,7 @@ class Model:
     shade_targeting_factor: float # 0 - 1, where 1 = perfectly targeted shade, 0 = random shade
     data: dict
 
-    def __init__(self,num_years: int, air_heat_lag: int, air_melt_multiplier: float, ice_power: float, ice_freeze_multiplier: float, sun_melt_multiplier: float, lat_for_insolation_calc: float, max_sie: float , min_sie: float, ocean_heat_melt_multiplier: float, insolation_year: int, insolation_file: str, start_year: int, wind_spread_start: int, wind_spread_stop: int, wind_spread_rate: float, real_area: float, shade_on: bool, shade_start: int, shade_stop: int, shade_area: float, shade_targeting_factor: float) -> None:
+    def __init__(self,num_years: int, air_heat_lag: int, air_melt_multiplier: float, ice_power: float, ice_freeze_multiplier: float, final_freeze_multiplier: float, sun_melt_multiplier: float, lat_for_insolation_calc: float, max_sie: float , min_sie: float, ocean_heat_melt_multiplier: float, insolation_year: int, insolation_file: str, start_year: int, wind_spread_start: int, wind_spread_stop: int, wind_spread_rate: float, real_area: float, shade_on: bool, shade_start: int, shade_stop: int, shade_area: float, shade_targeting_factor: float) -> None:
 
         # initialisation from Hydra config, see https://hydra.cc/docs/1.2/advanced/instantiate_objects/overview/
         self.num_years = num_years
@@ -56,6 +56,7 @@ class Model:
         self.air_melt_multiplier = air_melt_multiplier
         self.ice_power = ice_power
         self.ice_freeze_multiplier = ice_freeze_multiplier
+        self.final_freeze_multiplier = final_freeze_multiplier
         self.sun_melt_multiplier = sun_melt_multiplier
         self.lat_for_insolation_calc = lat_for_insolation_calc
         self.max_sie = max_sie
@@ -140,8 +141,15 @@ class Model:
         return self.ocean_heat_melt_multiplier * sie * (1/365)
 
     def radiationFreeze(self,sie):
-        sea_area = 1 - sie  # ToDo - check for value > 1, i.e. (SIE < 0) ?
+        sea_area = 1 - sie
+        sea_area = (abs(sea_area) + sea_area)/2 # positive or zero
         return self.ice_freeze_multiplier * (sea_area ** self.ice_power) * 1 / 365
+    
+    def finalFreeze(self,sie):
+        # accelerates freeze when SIE is small
+        sea_area = 1 - sie
+        sea_area = (abs(sea_area) + sea_area)/2 # positive or zero
+        return self.final_freeze_multiplier * (1/sea_area) * 1 / 365
 
     # def insolationByDayOfYear(self):
     #     print('Calculating insolation', file=sys.stderr)
@@ -168,7 +176,7 @@ class Model:
         # Cache result in a .pkl file - see https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.to_pickle.html
         # NB: Remove cached .pkl before changing any dataframe keys
 
-        max_air_heat_lag = 43
+        max_air_heat_lag = 140 # NB: Clear cache after increasing
 
         if (self.insolation_file != '' and os.path.exists(self.insolation_file)):
             insolation_df = pd.read_pickle(self.insolation_file)
@@ -274,7 +282,7 @@ class Model:
             provisional_sie = todays_sie - todays_sie_loss
 
             # calculate and record SIE increase (freeze component)
-            todays_freeze = self.radiationFreeze(provisional_sie)
+            todays_freeze = self.radiationFreeze(provisional_sie) + self.finalFreeze(provisional_sie)
             self.data['freeze'].append(todays_freeze)
 
             # calculate and record revised SIE 
