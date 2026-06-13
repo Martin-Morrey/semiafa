@@ -34,11 +34,12 @@ def optimiseModel(cfg: DictConfig) -> float:
     #adjustedCost = myutils.adjustedCostFunction(masie_df,'yyyyddd','Specified Regions Rescaled',model_data_df,'yyyyddd','sie',cfg.Optimiser.start_year,cfg.Optimiser.end_year,cfg.Optimiser.ice_maximum_shortfall_cost)
     #return adjustedCost
 
-    # simple approach, but includes model warm-up years we don't want to use
-    # simpleCost =  myutils.meanAbsoluteDifference(masie_df,'yyyyddd','Specified Regions Rescaled',model_data_df,'yyyyddd','sie')
+    # simple approach, calculate abs difference over common subset of MASIE and model dates
+    cost =  myutils.meanAbsoluteDifference(masie_df,'yyyyddd','Specified Regions Rescaled',model_data_df,'yyyyddd','sie')
 
-    # use only our chosen MASIE period (ToDo: can be made much cleaner)
-    cost = myutils.timeboundCostFunction(masie_df,'Specified Regions Rescaled',model_data_df,'sie',cfg.Optimiser.start_year,cfg.Optimiser.end_year)
+    # use only our chosen MASIE period (Redundant now we filter MASIE data on date range)
+    # cost = myutils.timeboundCostFunction(masie_df,'Specified Regions Rescaled',model_data_df,'sie',cfg.Optimiser.start_year,cfg.Optimiser.end_year)
+
     print('cost: %4.4f' %cost, file=sys.stderr)
 
     return cost

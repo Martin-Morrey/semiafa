@@ -21,7 +21,8 @@ if __name__ == "__main__":
     #cfg = hydra.compose(config_name="2023-07-06_optimised-config")
     #cfg_file = "optimised-config_imsc-40p0"
     # cfg_file = "optimised-config_rescaled1_2026-05-01.yaml"
-    cfg_file = "optimised-config_rescaled1_2026-06-11.yaml"
+    #cfg_file = "optimised-config_rescaled1_2026-06-09.yaml"
+    cfg_file = "optimised-config_rescaled1_2026-06-13.yaml"
     cfg = hydra.compose(config_name=cfg_file)
     print('Applying config: ' + cfg_file, file=sys.stderr)
 
@@ -66,7 +67,7 @@ if __name__ == "__main__":
     # Set plot title and labels
     plt.title('MASIE SIE vs SEMIAFA Model')
     plt.xlabel('year')
-    plt.ylabel('normalised value')
+    plt.ylabel('rescaled value')
 
     # Add a legend
     plt.legend()

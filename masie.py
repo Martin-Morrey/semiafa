@@ -51,7 +51,14 @@ class SeaIceRecord:
             # sum the sie values in the specified column-names in the masie CSV
             masie_df['Specified Regions']=masie_df[self.column_names].sum(axis=1) # regions read from hydra config (see above)
 
-            df = self.masieDateStringToDate(masie_df)
+            masie_df = self.masieDateStringToDate(masie_df) # puts Python datetime64 date into list 'date'
+
+            # filter for specified year range
+            start_date = str(self.start_year) + '-01-01'
+            end_date = str(self.end_year) + '-12-31'
+            #df = masie_df.query("date >= '2020-01-01' and date < '2025-12-31'")
+            df = masie_df.query("date >= '" + start_date +"' and date < '" + end_date + "'")
+
             #df[' (0) Northern_Hemisphere'] = myutils.normaliseList(df[' (0) Northern_Hemisphere'])
             df['Specified Regions Normalised'] = myutils.normaliseList(df['Specified Regions'])
             df['Specified Regions Rescaled'] = myutils.rescaleList(df['Specified Regions'])

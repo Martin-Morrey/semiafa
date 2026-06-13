@@ -53,6 +53,8 @@ masie:
   # csv_file_path: masie_data/2023-06-01/masie_4km_allyears_extent_sqkm.csv
   csv_file_path: masie_data/2026-05-01/masie_4km_allyears_extent_sqkm.csv
   regions: [' (1) Beaufort_Sea',' (2) Chukchi_Sea',' (3) East_Siberian_Sea',' (4) Laptev_Sea',' (5) Kara_Sea'] #,' (11) Central_Arctic'] # 8.2M km2
+  start_year: 2008 # after step change in sea-ice thickness - Sumatra 2023
+  end_year: 2025 # 2022
 Optimiser:
   start_year: 2008 # after step change in sea-ice thickness - Sumatra 2023
   end_year: 2025 # 2022

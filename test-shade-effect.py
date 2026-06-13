@@ -80,7 +80,7 @@ if __name__ == "__main__":
     (masie_min, masie_max) = (312153, 4956787) # marginal seas only, min of 312153 was in 2012
 
     sunshade_area = 2
-    num_sunshades = 4000
+    num_sunshades = 2000
     total_shade_area = sunshade_area * num_sunshades
 
     # ========================= Rescale Sunshade Area Just Like Total Area =============
@@ -102,7 +102,8 @@ if __name__ == "__main__":
     #cfg = hydra.compose(config_name="2023-07-07_optimised-config_run1")
     # cfg_file = "optimised-config_imsc-40p0"
     #cfg_file = "optimised-config_rescaled1_2026-05-01.yaml"
-    cfg_file = "optimised-config_rescaled1_2026-06-09.yaml"
+    #cfg_file = "optimised-config_rescaled1_2026-06-09.yaml"
+    cfg_file = "optimised-config_rescaled1_2026-06-13.yaml"
 
     cfg = hydra.compose(config_name=cfg_file)
     print('Applying config: ' + cfg_file, file=sys.stderr)
