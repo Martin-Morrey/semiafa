@@ -1,9 +1,9 @@
 # SEMIAFA - Simple Empirical Model of Ice-Albedo Feedback in the Arctic
 
 ## Description
-SEMIAFA is a simple parameterised empirical model of Arctic sea-ice extent (SIE) over the annual cycle, best used on the geographically bound area of Arctic Sea, and testing interventions targeted in this area.
+SEMIAFA is a simple parameterised empirical model of Arctic sea-ice extent (SIE) over the annual cycle, best used on the geographically bound area of Arctic Sea, and specifically the marginal seas.
 
-It was designed to be used to for testing the order-of-magnitude impact of targeted solar-geoengineering interventions, which take advantage of the amplifying effect of the ice-albedo feedback.
+It was designed to be used to for testing the order-of-magnitude impact of shading interventions, which could take advantage of the amplifying effect of the ice-albedo feedback.
 
 The pseudo-physical parameters used for modelling the physical processes affecting Arctic SIE, including the ice-albedo feedback, are set-out in the table below.
 
@@ -26,8 +26,6 @@ Far from an exhaustive list, but here goes:
     - It does not consider inter-annual trends in sea-ice extent
     - Any benefit of an intervention that preserves sea-ice is just in-year only
     - So although interventions which preserve SIE during the summer, will increase ice thickness over winter, the amount of multi-year ice, and tend to slow the loss of SIE in the following year, these effects **will not** be reflected in the model results
-- It assumes that a shading intervention is well-targeted
-    - i.e. the area with the lowest albedo (e.g. open sea with no ice), is always shaded first
 
 ## Scripts for Running and Using the Model
 
@@ -45,15 +43,17 @@ Far from an exhaustive list, but here goes:
 The simple empirical model is configured with a limited set of parameters set-out in the table below.  These parameters are optimised by minimising a cost function based on the delta between the model output and the input data from masie.
 
 <table>
-<tr><th>Name</th><th>Description</th><th>Optimised value</th></tr>
-<tr><td>solar_heat_multiplier</td><td>relative melting rate from a date-dependent rescaled insolation</td><td>23.8</td></tr>
-<tr><td>ocean_heat_multiplier</td><td>relative melting rate from a constant ocean heat input</td><td>0.5</td><tr>
-<tr><td>air_heat_lag</td><td>time in days between notional solar-driven air heat and direct solar heat</td><td>7</td><tr>
-<tr><td>air_melt_multiplier</td><td>relative melting rate from date-dependent notional air heat</td><td>1.0</td><tr>
-<tr><td>ice_freeze_multiplier</td><td>relative freezing rate of open sea</td><td>7.7</td><tr>
-<tr><td>ice_power</td><td>power relation between extent of open sea and freezing rate</td><td>0.5</td><tr>
-<tr><td>final_freeze_multiplier</td>degree of accelerated final freeze, needed to reach full SIE in winter</td><td></td></tr>
+<tr><th>Name</th><th>Description</th><th>Example Value*</th></tr>
+<tr><td>sun_melt_multiplier</td><td>relative melting rate from a date-dependent rescaled insolation</td><td>24.0</td></tr>
+<tr><td>ocean_heat_multiplier</td><td>relative melting rate from a constant ocean heat input</td><td>0.2</td><tr>
+<tr><td>air_heat_lag</td><td>time in days between notional solar-driven air heat and direct solar heat</td><td>-49</td><tr>
+<tr><td>air_melt_multiplier</td><td>relative melting rate from date-dependent notional air heat</td><td>1.7</td><tr>
+<tr><td>ice_freeze_multiplier</td><td>relative freezing rate of open sea</td><td>10.0</td><tr>
+<tr><td>ice_power</td><td>power relation between extent of open sea and freezing rate</td><td>0.7</td><tr>
+<tr><td>final_freeze_multiplier</td><td>degree of accelerated final freeze, needed to reach full SIE in winter</td><td>0.00002</td></tr>
 </table>
+
+*Example values are after being optimised against the marginal seas only - see configuration notes.
 
 ## Other Configuration Parameters
 
@@ -92,8 +92,11 @@ To get a consist total frozen area in winter, select only the geographically bou
 
 ```regions: [' (1) Beaufort_Sea',' (2) Chukchi_Sea',' (3) East_Siberian_Sea',' (4) Laptev_Sea',' (5) Kara_Sea',' (11) Central_Arctic']``` 
 
-See https://nsidc.org/data/masie/explore-region
+The SIE Central Arctic does not change in the early part of the melt season, so to get the best approximation of the albedo feedback, select only the marginal seas, i.e.:
 
+```regions: [' (1) Beaufort_Sea',' (2) Chukchi_Sea',' (3) East_Siberian_Sea',' (4) Laptev_Sea',' (5) Kara_Sea']```
+
+See https://nsidc.org/data/masie/explore-region
 
 
 ## Optuna Sweeper Optimisation
@@ -103,7 +106,7 @@ To configure and run Optuna:
 - Configure the Optuna sweeper in the Hydra config file, i.e. `config/optimiser-config.yaml`
     - this involves setting the range and increment of each parameter
 - Run `python3 optimise.py --multirun`
-- Best config parameters are recorded in `optimization_results.yaml`, in sub-folder `multirun/hh-mm-ss/`
+- Best config parameters are recorded in `optimization_results.yaml`, in sub-folder `multirun/yyyy-mm-dd/hh-mm-ss/`
 
 ## Insolation Cache
 
