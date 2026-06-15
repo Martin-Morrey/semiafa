@@ -29,16 +29,8 @@ def optimiseModel(cfg: DictConfig) -> float:
     model_data_df = pd.DataFrame.from_dict(model_data) # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.from_dict.html
 
     #  Calculate difference between masie data and model
-
-    # old approach with winter-freeze-biased cost function
-    #adjustedCost = myutils.adjustedCostFunction(masie_df,'yyyyddd','Specified Regions Rescaled',model_data_df,'yyyyddd','sie',cfg.Optimiser.start_year,cfg.Optimiser.end_year,cfg.Optimiser.ice_maximum_shortfall_cost)
-    #return adjustedCost
-
-    # simple approach, calculate abs difference over common subset of MASIE and model dates
+    #  returns abs difference over common subset of MASIE and model dates
     cost =  myutils.meanAbsoluteDifference(masie_df,'yyyyddd','Specified Regions Rescaled',model_data_df,'yyyyddd','sie')
-
-    # use only our chosen MASIE period (Redundant now we filter MASIE data on date range)
-    # cost = myutils.timeboundCostFunction(masie_df,'Specified Regions Rescaled',model_data_df,'sie',cfg.Optimiser.start_year,cfg.Optimiser.end_year)
 
     print('cost: %4.4f' %cost, file=sys.stderr)
 

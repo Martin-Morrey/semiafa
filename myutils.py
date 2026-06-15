@@ -121,56 +121,6 @@ def meanAbsoluteDifference(df1,index_key1,value_key1,df2,index_key2,value_key2):
     return result_df['abs'].mean()
 
 
-# def meanTopBiasedAbsoluteDifference(df1,index_key1,value_key1,df2,index_key2,value_key2):
-#     # Returns mean of absolute differences between two columns of different data frames
-#     # Applied to the common subset in a shared index, e.g. 'yyyyddd' date string
-#     # ToDo - defensive checks needed
-#     # --- check contents of index_key1 and index_key2 columns have some shared values
-#     # --- check value_key1 and value_key2 strings are different, and change one if not
-
-#     # make sure both specified keys are of same type
-#     df1[index_key1] = df1[index_key1].astype(str) # cast specified key to string
-#     df2[index_key2] = df2[index_key2].astype(str) # cast specified key to string
-
-#     # merge two data frames on shared index, giving the common subset https://datascience.stackexchange.com/a/53837
-#     merged_df = pd.merge(df1, df2, how='inner', left_on=index_key1, right_on=index_key2) 
-#     #print(merged_df, file=sys.stderr)
-
-#     # subtract the two columns and find the absolute value 
-#     result_df = pd.DataFrame()  
-#     result_df['diff'] = merged_df[value_key1] - merged_df[value_key2] # https://www.geeksforgeeks.org/how-to-subtract-two-columns-in-pandas-dataframe/
-#     result_df['abs'] = result_df['diff'].abs()
-
-#     # multiply by the mean of the two columns to top-bias the result
-#     result_df['mean'] = (merged_df[value_key1] - merged_df[value_key2])/2
-#     result_df['top-biased'] = (result_df['abs'] * result_df['mean'])**(1/8)
-
-#     #print(result_df, file=sys.stderr)
-    
-#     return result_df['top-biased'].mean()
-
-  
-def adjustedCostFunction(df1,index_key1,value_key1,df2,index_key2,value_key2,start_year,end_year,weight):
-
-    mean_abs_diff = meanAbsoluteDifference(df1,index_key1,value_key1,df2,index_key2,value_key2)
-
-    num_years = (end_year - start_year) - 1
-
-    sie_minmax_observations = maxAndMinsByYear(df1,value_key1,start_year,num_years)
-    sie_minmax_model = maxAndMinsByYear(df2,value_key2,start_year,num_years)
-
-    total_model_shortfall = 0
-    for y in range(num_years):
-        max_observations = sie_minmax_observations['max'][y]
-        max_model = sie_minmax_model['max'][y]
-        shortfall = max_observations - max_model
-        total_model_shortfall += (shortfall + abs(shortfall))/2 # 0 if model > observations
-
-    mean_model_shortfall = total_model_shortfall / num_years
-    adjustment = mean_model_shortfall * weight
-
-    return mean_abs_diff + adjustment
-
 def timeboundCostFunction(df1,value_key1,df2,value_key2,start_year,end_year):
     # calculate absolute diff only for the years are interested in
     # assumes index key is 'yyyyddd'
