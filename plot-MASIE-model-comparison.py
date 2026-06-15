@@ -65,9 +65,20 @@ if __name__ == "__main__":
     #ax.plot(model_data['date'],model_data['solar_heat'], label='model Solar Heat')
 
     # Set plot title and labels
+
+    # set the font sizes
+    plot_params = {
+        'legend.fontsize': 10,
+        #  'figure.figsize': (15, 5),
+         'axes.labelsize': 12,
+         'axes.titlesize': 12,
+         'xtick.labelsize': 12,
+         'ytick.labelsize': 12}
+
     plt.title('MASIE SIE vs SEMIAFA Model')
-    plt.xlabel('year')
-    plt.ylabel('rescaled value')
+    plt.rcParams.update(plot_params) # ,{'font.size': 22}) # https://stackoverflow.com/a/38251497, 
+    plt.xlabel('year') #,fontsize=12)
+    plt.ylabel('rescaled value') #,fontsize=12)
 
     # Add a legend
     plt.legend()

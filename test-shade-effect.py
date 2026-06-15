@@ -79,9 +79,10 @@ if __name__ == "__main__":
     # (masie_min, masie_max) = (2933846,8204782) # all geographically bound, inc central arctic
     (masie_min, masie_max) = (312153, 4956787) # marginal seas only, min of 312153 was in 2012
 
-    sunshade_area = 2
-    num_sunshades = 2000
-    total_shade_area = sunshade_area * num_sunshades
+    # sunshade_area = 2
+    # num_sunshades = 1000
+    # total_shade_area = sunshade_area * num_sunshades
+    total_shade_area = 6000 # km2
 
     # ========================= Rescale Sunshade Area Just Like Total Area =============
     # normalised_shade_area = (sunshade_area * num_sunshades) / total_area # WRONG!!! this is rescaling, MASIE data was normalised
@@ -134,28 +135,43 @@ if __name__ == "__main__":
                                                shade_area = rescaled_shade_area,
                                                shade_targeting_factor = 0) 
 
-    data_with_shade = model_targeted_shade.runModel()
+    data_with_targeted_shade = model_targeted_shade.runModel()
+    data_with_untargeted_shade = model_untargeted_shade.runModel()
     data_no_shade = model_no_shade.runModel()
 
     # ============================ Analyse the Results ============================================
 
     # Create Pandas Data Frame from Model Dictionary
     df_no_shade = pd.DataFrame.from_dict(data_no_shade) # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.from_dict.html
-    df_with_shade = pd.DataFrame.from_dict(data_with_shade) # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.from_dict.html
+    df_with_targeted_shade = pd.DataFrame.from_dict(data_with_targeted_shade) # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.from_dict.html
+    df_with_untargeted_shade = pd.DataFrame.from_dict(data_with_untargeted_shade) # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.from_dict.html
 
     # SIE Analysis Dictionaries
     sie_no_shade = myutils.statsByYear(df_no_shade,'sie',start_year,num_years) 
-    sie_with_shade = myutils.statsByYear(df_with_shade,'sie',start_year,num_years)
+    sie_with_targeted_shade = myutils.statsByYear(df_with_targeted_shade,'sie',start_year,num_years)
+    sie_with_untargeted_shade = myutils.statsByYear(df_with_untargeted_shade,'sie',start_year,num_years)
+
 
     # Solar Heat Analysis Dictionaries
     solar_heat_no_shade = myutils.statsByYear(df_no_shade,'total-insolation',start_year,num_years)
-    solar_heat_with_shade = myutils.statsByYear(df_with_shade,'total-insolation',start_year,num_years)
+    solar_heat_with_targeted_shade = myutils.statsByYear(df_with_targeted_shade,'total-insolation',start_year,num_years)
+    solar_heat_with_untargeted_shade = myutils.statsByYear(df_with_untargeted_shade,'total-insolation',start_year,num_years)
 
     # ===================== Write Summary of Results to STDOUT ==============================
 
     writer = csv.writer(sys.stdout)
 
-    header = ['year', 'min SIE no shade', 'max SIE no shade', 'min SIE with shade', 'max SIE with shade' ,'shade area','solar heat no shade (MJ)', 'solar heat with shade(MJ)','solar heat delta (MJ)']
+    header = ['year', 
+              'min SIE no shade', 
+              'max SIE no shade', 
+              'min SIE with targeted shade', 
+              'max SIE with targeted shade',
+              'min SIE with untargeted shade', 
+              'max SIE with untargeted shade',
+              'shade area',
+              'solar heat no shade (MJ)',
+              'solar heat with shade(MJ)',
+              'solar heat delta (MJ)']
     writer.writerow(header)
 
     for y in range(num_years):
@@ -163,7 +179,7 @@ if __name__ == "__main__":
         #diff = sie_with_shade['min'][y] - sie_no_shade['min'][y]
         #shade_multiplier = diff / model_with_shade.shade_area
         full_solar_heat = solar_heat_no_shade['sum'][y]
-        reduced_solar_heat = solar_heat_with_shade['sum'][y]
+        reduced_solar_heat = solar_heat_with_targeted_shade['sum'][y]
         solar_heat_delta = full_solar_heat - reduced_solar_heat
 
         # start list for appending output data by year
@@ -172,8 +188,10 @@ if __name__ == "__main__":
         # put areas into integer units of km2, by de-rescaling using properties of MASIE source data
         data.append( round( myutils.deRescaleValue(sie_no_shade['min'][y],masie_max) ) )
         data.append( round( myutils.deRescaleValue(sie_no_shade['max'][y],masie_max) ) )
-        data.append( round( myutils.deRescaleValue(sie_with_shade['min'][y],masie_max) ) )
-        data.append( round( myutils.deRescaleValue(sie_with_shade['max'][y],masie_max) ) )
+        data.append( round( myutils.deRescaleValue(sie_with_targeted_shade['min'][y],masie_max) ) )
+        data.append( round( myutils.deRescaleValue(sie_with_targeted_shade['max'][y],masie_max) ) )
+        data.append( round( myutils.deRescaleValue(sie_with_untargeted_shade['min'][y],masie_max) ) )
+        data.append( round( myutils.deRescaleValue(sie_with_untargeted_shade['max'][y],masie_max) ) )
 
         data.append( total_shade_area )
         # append other values

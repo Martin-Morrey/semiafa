@@ -1,0 +1,78 @@
+Model:
+  _target_: semiafa.Model
+  #
+  
+  
+  #Old "normalised" model, with ice_maximum_shortfall_cost: 40.0
+  # air_heat_lag: -14
+  # air_melt_multiplier: 0.9
+  # ice_power: 0.5
+  # ice_freeze_multiplier: 5.2
+  # sun_melt_multiplier: 22.1
+  # ocean_heat_melt_multiplier: 0.1
+
+  # physical parameters from optimisation run 2026-05-01/13:49:44, est_value: 0.027825307739396163
+  # new rescaled model, with ice_maximum_shortfall_cost: 40.0
+  # air_heat_lag: -28
+  # air_melt_multiplier: 0.9
+  # ice_power: 0.7
+  # ice_freeze_multiplier: 6.4
+  # sun_melt_multiplier: 18.4
+  # ocean_heat_melt_multiplier: 0.0
+
+  # new rescaled model, with ice_maximum_shortfall_cost: 0.0, best_value: 0.03144975714102759
+  # air_heat_lag: -21
+  # air_melt_multiplier: 0.7
+  # ice_power: 0.8
+  # ice_freeze_multiplier: 7.9
+  # sun_melt_multiplier: 20.0 # 19.0
+  # ocean_heat_melt_multiplier: 0.05
+
+  # new rescaled model, marginal seas only (no central Arctic) imsc: 0.0, best_value: 0.04493757673223831
+  # air_heat_lag: -42
+  # air_melt_multiplier: 0.9
+  # ice_power: 0.7
+  # ice_freeze_multiplier: 8.3
+  # final_freeze_multiplier: 0 # switching this off for the moment
+  # sun_melt_multiplier: 22.4
+  # ocean_heat_melt_multiplier: 0.275
+
+  # from 2000-trial model run on 13th June 26
+  air_heat_lag: -49
+  air_melt_multiplier: 1.7000000000000002
+  ice_power: 0.7
+  ice_freeze_multiplier: 10.0
+  final_freeze_multiplier: 1.9999999999999998e-05
+  sun_melt_multiplier: 24.0
+  ocean_heat_melt_multiplier: 0.2
+
+ # ----------------------------------------------------
+
+  # core parameters
+  lat_for_insolation_calc: 75 # representative latitude for approximate insolation
+  max_sie: 0.99999
+  min_sie: 0.00001
+  insolation_year: 2010
+  insolation_file: cache/insolation.pkl # .pkl file for caching insolation data
+  start_year: 2007 # Allow a couple of years to settle when comparing with masie 4KM starts 2006, MAISE 1KM starts 2014
+  num_years: 20
+  #
+  # Area parameters
+  # total area of selected regions in masie-NH is approx 8,200,000 km2
+  wind_spread_start: 136 #  - first of each month J:1, F:32, M:60, A:91, M:121 
+  wind_spread_stop: 156 # data indicates ~50,000 km2 by day 150, but highly variable
+  wind_spread_rate: 0.0003 # proportion of ice area exposed by wind daily, 0.0003 is ~2,500km2 (x 20 days give 50,000)
+  real_area: 4956787 # marginal seas only = 4,956,787 (MASIE max area of Beaufort_Sea + Chukchi_Sea + East_Siberian_Sea + Laptev_Sea + Kara_Sea)
+  shade_on: No
+  shade_start: 137
+  shade_stop: 201
+  shade_area: 0  # overridden in test-shade-effect.py
+  shade_targeting_factor: 1 # overridden in test-shade-effect.py, (0-1) - 0: shade is distributed over whole area, 1: shade is targeted at open sea 100% of the time
+masie:
+  _target_: masie.SeaIceRecord
+  #csv_file_path: masie-data/2023-06-01/masie_4km_allyears_extent_sqkm.csv
+  # csv_file_path: masie_data/2023-06-01/masie_4km_allyears_extent_sqkm.csv
+  csv_file_path: masie_data/2026-05-01/masie_4km_allyears_extent_sqkm.csv
+  regions: [' (1) Beaufort_Sea',' (2) Chukchi_Sea',' (3) East_Siberian_Sea',' (4) Laptev_Sea',' (5) Kara_Sea'] # see also 'real_area' - 5 M km2 or 8.2 M km2 with ' (11) Central_Arctic']
+  start_year: 2008
+  end_year: 2026
